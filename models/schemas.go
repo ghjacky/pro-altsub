@@ -9,21 +9,32 @@ import (
 
 type MSchema struct {
 	BaseModel
-	SourceID uint    `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
 	Data     JSON    `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
 	EvField  string  `json:"ev_field" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
 	EvType   string  `json:"ev_type" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
+	SourceID uint    `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
 	Source   MSource `json:"source" gorm:"foreignKey:SourceID;references:ID"`
 }
 
 type MSchemas struct {
 	PQ  PageQuery
 	TX  *gorm.DB
-	All []*MSource
+	All []*MSchema
 }
 
 func (*MSchema) TableName() string {
 	return "tb_schemas"
+}
+
+func (ss *MSchemas) Fetch() error {
+	if ss.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "拉取schema失败", "models:schema.Add()")
+		return err
+	}
+	err := ss.PQ.Query(ss.TX, &ss.All).Error
+	base.NewLog("", err, "拉取schema", "models:schema.Add()")
+	return err
 }
 
 func (s *MSchema) Add() error {
@@ -37,10 +48,17 @@ func (s *MSchema) Add() error {
 		base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
 		return err
 	}
-	if s.Source.ID == 0 || len(s.Source.Name) <= 0 {
-		err := errors.New("wrong ralated source")
-		base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
-		return err
+	if s.Source.ID == 0 {
+		if len(s.Source.Name) == 0 {
+			err := errors.New("wrong ralated source")
+			base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
+			return err
+		} else {
+			if err := s.Source.GetByName(); err != nil {
+				base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
+				return err
+			}
+		}
 	}
 	err := s.TX.Create(s).Error
 	base.NewLog("", err, "新增schema", "models:schema.Add()")

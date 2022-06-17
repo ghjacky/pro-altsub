@@ -27,16 +27,20 @@ var (
 		code:    1002,
 		message: "告警源接入失败",
 	}
+	ErrorFailedToQuerySources ResponseError = ResponseError{
+		code:    1003,
+		message: "告警源查询失败",
+	}
 	ErrorEmptySchemaData ResponseError = ResponseError{
 		code:    2001,
 		message: "schema数据为空",
 	}
 	ErrorFailedToAddSchema ResponseError = ResponseError{
-		code: 2002,
+		code:    2002,
 		message: "新增schema失败",
 	}
-	ErrorFailedToWriteEvent ResponseError = ResponseError {
-		code: 3002,
+	ErrorFailedToWriteEvent ResponseError = ResponseError{
+		code:    3002,
 		message: "事件写入失败",
 	}
 )

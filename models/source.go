@@ -30,12 +30,9 @@ func (ss *MSources) Fetch() error {
 		base.NewLog("error", err, "拉取告警源失败", "models:source.Add()")
 		return err
 	}
-	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
-		base.NewLog("error", err, "拉取告警源失败", "models:source.Add()")
-		return err
-	} else {
-		return nil
-	}
+	err := ss.PQ.Query(ss.TX, &ss.All).Error
+	base.NewLog("", err, "拉取告警源失败", "models:source.Add()")
+	return err
 }
 
 func (s *MSource) Add() error {

@@ -12,7 +12,7 @@ import (
 func Fetch(tx *gorm.DB, pq *models.PageQuery) (*models.MSources, error) {
 	if tx == nil {
 		err := errors.New("nil db object")
-		base.NewLog("error", err, "获取schema失败", "source:Fetch()")
+		base.NewLog("error", err, "获取告警源失败", "source:Fetch()")
 		return nil, err
 	}
 	if pq == nil {

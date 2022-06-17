@@ -7,6 +7,8 @@ import (
 	"errors"
 	"sort"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type SchemaItem struct {
@@ -23,6 +25,26 @@ type SchemaItem struct {
 type SchemaItems []*SchemaItem
 
 type SchemaItemsSlice []SchemaItems
+
+func Fetch(tx *gorm.DB, pq *models.PageQuery) (*models.MSchemas, error) {
+	if tx == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取schema失败", "schema:Fetch()")
+		return nil, err
+	}
+	if pq == nil {
+		pq = &models.PageQuery{}
+		pq.Page = 1
+		pq.Size = 10000
+		pq.Order = "+id"
+	}
+	var ss = &models.MSchemas{
+		TX:  tx,
+		PQ:  *pq,
+		All: []*models.MSchema{},
+	}
+	return ss, ss.Fetch()
+}
 
 func Add(schm *models.MSchema) (err error) {
 	if schm == nil {

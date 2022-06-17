@@ -19,6 +19,7 @@ func (sv *HttpServer) RegisterRoutes() {
 	sv.sourceRoutes()
 	sv.schemaRoutes()
 	sv.eventRoutes()
+	sv.ruleRoutes()
 	sv.receiverRoutes()
 	sv.subscribeRoutes()
 	sv.maintenanceRoutes()

@@ -3,46 +3,46 @@ package handlerv1
 import (
 	"altsub/base"
 	"altsub/models"
-	"altsub/modules/schema"
+	"altsub/modules/rule"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AddSchema(ctx *gin.Context) {
-	var scm = models.MSchema{}
+func AddRule(ctx *gin.Context) {
+	var rl = models.MRule{}
 	sourceName := ctx.Query("source_name")
 	sourceId, _ := strconv.Atoi(ctx.Query("source_id"))
 	if len(sourceName) <= 0 && sourceId == 0 {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptySource, nil, nil))
 		return
 	}
-	if err := ctx.Bind(&scm); err != nil {
+	if err := ctx.Bind(&rl); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
 		return
 	}
-	src := models.MSource{Name: sourceName}
+	src := &models.MSource{Name: sourceName}
 	src.ID = uint(sourceId)
 	src.TX = base.DB()
-	scm.Source = src
-	scm.BaseModel.TX = src.TX
-	if err := schema.Add(&scm); err != nil {
+	rl.Source = src
+	rl.BaseModel.TX = src.TX
+	if err := rule.Add(&rl); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToAddSchema, nil, nil))
 		return
 	}
-	ctx.JSON(http.StatusOK, newHttpResponse(nil, scm, nil))
+	ctx.JSON(http.StatusOK, newHttpResponse(nil, rl, nil))
 }
 
-func FetchSchemas(ctx *gin.Context) {
+func FetchRules(ctx *gin.Context) {
 	var pq = models.PageQuery{}
 	if err := ctx.BindQuery(&pq); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
 		return
 	}
-	if schms, err := schema.Fetch(base.DB(), &pq); err != nil {
+	if rls, err := rule.Fetch(base.DB(), &pq); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToQuerySources, nil, nil))
 	} else {
-		ctx.JSON(http.StatusOK, newHttpResponse(nil, schms.All, map[string]interface{}{"total": schms.PQ.Total}))
+		ctx.JSON(http.StatusOK, newHttpResponse(nil, rls.All, map[string]interface{}{"total": rls.PQ.Total}))
 	}
 }

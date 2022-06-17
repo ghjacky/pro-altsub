@@ -53,7 +53,7 @@ func parseFlags() {
 func main() {
 	parseFlags()
 	base.Init()
-	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{})
+	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{}, &models.MRule{})
 	ss, err := source.Fetch(base.DB(), nil)
 	if err != nil {
 		base.NewLog("fatal", err, "couldn't fetch sources from mysql", "main()")

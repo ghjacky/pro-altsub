@@ -26,3 +26,16 @@ func AddSource(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, newHttpResponse(nil, src, nil))
 }
+
+func FetchSources(ctx *gin.Context) {
+	var pq = models.PageQuery{}
+	if err := ctx.BindQuery(&pq); err != nil {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
+		return
+	}
+	if srcs, err := source.Fetch(base.DB(), &pq); err != nil {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToQuerySources, nil, nil))
+	} else {
+		ctx.JSON(http.StatusOK, newHttpResponse(nil, srcs.All, map[string]interface{}{"total": srcs.PQ.Total}))
+	}
+}
