@@ -4,6 +4,7 @@ import (
 	"altsub/base"
 	"altsub/models"
 	"altsub/modules/schema"
+	"fmt"
 )
 
 // 接收事件，写入kafka
@@ -30,22 +31,23 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 				var ev = models.MEvent{}
 				ev.TX = schm.TX
 				ev.Data = rawEv
-				if err := schema.ParseEvent(&schm, &ev); err != nil {
+				if parsedEvs, err := schema.ParseEvent(&schm, &ev); err != nil {
 					base.NewLog("error", err, "事件解析失败", "ReadAndParseEventFromBufferForever()")
 					continue
+				} else {
+					base.NewLog("trace", nil, fmt.Sprintf("事件解析：%#v", parsedEvs), "ReadAndParseEventFromBufferForever()")
+					// 事件入库
+					if err := StoreToDb(&ev); err != nil {
+						base.NewLog("warn", err, "事件入库失败", "ReadAndParseEventFromBufferForever()")
+					}
+					// 事件处理-维护检测
+					// 事件处理-抑制检测
+					// 事件处理-认领检测
+					// 事件处理-指派(订阅)检测
+					// 事件处理-告警发送
+					// 事件发送记录（事件未发送（维护、抑制）、事件已发送但失败、事件已发送且成功）
+
 				}
-				// 事件入库
-
-				// 维护检测
-
-				// 告警抑制检测
-
-				// 订阅（指派）监测
-
-				// 发送告警事件
-
-				// 事件发送记录（事件未发送（维护、抑制）、事件已发送但失败、事件已发送且成功）
-
 			}
 		}(src)
 	}

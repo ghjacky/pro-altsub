@@ -22,6 +22,8 @@ type SchemaItem struct {
 
 type SchemaItems []*SchemaItem
 
+type SchemaItemsSlice []SchemaItems
+
 func Add(schm *models.MSchema) (err error) {
 	if schm == nil {
 		err = errors.New("empty schema data")
@@ -60,12 +62,12 @@ func GetBySourceName(schm *models.MSchema, srcName string) (err error) {
 	return
 }
 
-func ParseEvent(schm *models.MSchema, ev *models.MEvent) error {
+func ParseEvent(schm *models.MSchema, ev *models.MEvent) (SchemaItemsSlice, error) {
 	// schema数据自身解析
 	var schmItems = &SchemaItems{}
 	if err := json.Unmarshal(schm.Data, &schmItems); err != nil {
 		base.NewLog("error", err, "事件解析失败", "schema:ParseEvent()")
-		return err
+		return nil, err
 	}
 	// 解析事件
 	var rawev interface{}
@@ -73,7 +75,7 @@ func ParseEvent(schm *models.MSchema, ev *models.MEvent) error {
 	var raweva []interface{}
 	if err := json.Unmarshal(ev.Data, &rawev); err != nil {
 		base.NewLog("error", err, "事件解析失败", "schema:ParseEvent()")
-		return err
+		return nil, err
 	}
 	switch schm.EvField {
 	case ".":
@@ -83,7 +85,7 @@ func ParseEvent(schm *models.MSchema, ev *models.MEvent) error {
 			rawev = rawev.(map[string]interface{})[evf]
 		}
 	}
-	var parsedEvma = []SchemaItems{}
+	var parsedEvma = SchemaItemsSlice{}
 	switch schm.EvType {
 	case "array":
 		raweva, _ = rawev.([]interface{})
@@ -98,13 +100,7 @@ func ParseEvent(schm *models.MSchema, ev *models.MEvent) error {
 		schmItems.parseEvent(ev)
 		parsedEvma = []SchemaItems{*schmItems}
 	}
-	// 事件处理-维护检测
-	// 事件处理-抑制检测
-	// 事件处理-认领检测
-	// 事件处理-指派检测
-	// 事件处理-告警发送
-
-	return nil
+	return parsedEvma, nil
 }
 
 func (schemaItems *SchemaItems) parseEvent(ev map[string]interface{}) {
