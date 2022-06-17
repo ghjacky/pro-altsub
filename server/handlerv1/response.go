@@ -2,15 +2,19 @@ package handlerv1
 
 import (
 	"altsub/base"
-	"altsub/models"
 )
 
 type HttpResponse map[string]interface{}
 
-func NewHttpResponse(code models.ErrorCode, err error, data interface{}, extras map[string]interface{}) HttpResponse {
+func newHttpResponse(err *ResponseError, data interface{}, extras map[string]interface{}) HttpResponse {
 	var hr = HttpResponse{}
-	hr["code"] = code.Code()
-	hr["message"] = code.String()
+	if err == nil {
+		hr["code"] = 0
+		hr["message"] = "ok"
+	} else {
+		hr["code"] = err.Code()
+		hr["message"] = err.Message()
+	}
 	hr["data"] = data
 	for k, v := range extras {
 		hr[k] = v

@@ -1,6 +1,8 @@
 package base
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -24,29 +26,33 @@ func initLog() {
 }
 
 func NewLog(level string, err error, message string, caller string) {
-	var f = func() (string, string, string, string) {
-		return "%s - %s: %s", caller, message, err.Error()
+	var f = func() (string) {
+		if err != nil {
+			return fmt.Sprintf("%s - %s: %s", caller, message, err.Error())
+		} else {
+			return fmt.Sprintf("%s - %s", caller, message)
+		}
 	}
 	switch level {
 	case "debug":
-		_log.Debugf(f())
+		_log.Debugln(f())
 	case "trace":
-		_log.Tracef(f())
+		_log.Traceln(f())
 	case "info":
-		_log.Infof(f())
+		_log.Infoln(f())
 	case "warn":
-		_log.Warnf(f())
+		_log.Warnln(f())
 	case "error":
-		_log.Errorf(f())
+		_log.Errorln(f())
 	case "fatal":
-		_log.Fatalf(f())
+		_log.Fatalln(f())
 	case "panic":
-		_log.Panicf(f())
+		_log.Panicln(f())
 	default:
 		if err != nil {
-			_log.Errorf(f())
+			_log.Errorln(f())
 		} else {
-			_log.Infof(f())
+			_log.Infoln(f())
 		}
 	}
 }

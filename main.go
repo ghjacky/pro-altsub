@@ -3,6 +3,7 @@ package main
 import (
 	"altsub/base"
 	"altsub/models"
+	"altsub/modules/event"
 	"altsub/modules/source"
 	"altsub/server"
 	"flag"
@@ -52,8 +53,8 @@ func parseFlags() {
 func main() {
 	parseFlags()
 	base.Init()
-	base.MigrateDB(&models.MSource{}, &models.MSchema{})
-	ss, err := source.Fetch(nil, nil)
+	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{})
+	ss, err := source.Fetch(base.DB(), nil)
 	if err != nil {
 		base.NewLog("fatal", err, "couldn't fetch sources from mysql", "main()")
 	}
@@ -62,6 +63,7 @@ func main() {
 		sources = append(sources, s.Name)
 	}
 	base.InitKafka(sources...)
+	event.ReadAndParseEventFromBufferForever(sources...)
 	watchingSignal()
 	var httpServer = server.NewServer(base.Config.MainConfig.Listen, gin.DebugMode)
 	httpServer.RegisterRoutes()

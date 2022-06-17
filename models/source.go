@@ -1,7 +1,9 @@
 package models
 
 import (
+	"altsub/base"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -24,17 +26,46 @@ func (*MSource) TableName() string {
 
 func (ss *MSources) Fetch() error {
 	if ss.TX == nil {
-		return errors.New("nil db object")
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "拉取告警源失败", "models:source.Add()")
+		return err
 	}
-	return ss.PQ.Query(ss.TX, &ss.All).Error
+	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
+		base.NewLog("error", err, "拉取告警源失败", "models:source.Add()")
+		return err
+	} else {
+		return nil
+	}
 }
 
 func (s *MSource) Add() error {
-	if s.DB == nil {
-		return errors.New("nil db object")
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "新增告警源失败", "models:source.Add()")
+		return err
 	}
 	if len(s.Name) <= 0 {
-		return errors.New("empty source name")
+		err := errors.New("empty source name")
+		base.NewLog("error", err, "新增告警源失败", "models:source.Add()")
+		return err
 	}
-	return s.DB.Create(s).Error
+	err := s.TX.Create(s).Error
+	base.NewLog("", err, fmt.Sprintf("新增告警源：%s", s.Name), "models:source.Add()")
+	return err
+}
+
+func (s *MSource) GetByName() error {
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "根据名称获取告警源失败", "models:source.GetByName()")
+		return err
+	}
+	if len(s.Name) <= 0 {
+		err := errors.New("empty source name")
+		base.NewLog("error", err, "根据名称获取告警源失败", "models:source.GetByName()")
+		return err
+	}
+	err := s.TX.Where("col_name = ?", s.Name).First(s).Error
+	base.NewLog("", err, fmt.Sprintf("根据名称（%s）获取告警源", s.Name), "models:source.GetByName()")
+	return err
 }

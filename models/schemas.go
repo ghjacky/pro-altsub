@@ -1,12 +1,19 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"altsub/base"
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type MSchema struct {
 	BaseModel
-	SourceID       uint    `json:"source_id" gorm:"column:col_source_id;not null;comment:schema相关联的 source id"`
-	Data           JSON    `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
-	Source         MSource `json:"source" gorm:"foreignKey:SourceID;references:ID"`
+	SourceID uint    `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
+	Data     JSON    `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
+	EvField  string  `json:"ev_field" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
+	EvType   string  `json:"ev_type" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
+	Source   MSource `json:"source" gorm:"foreignKey:SourceID;references:ID"`
 }
 
 type MSchemas struct {
@@ -17,4 +24,41 @@ type MSchemas struct {
 
 func (*MSchema) TableName() string {
 	return "tb_schemas"
+}
+
+func (s *MSchema) Add() error {
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
+		return err
+	}
+	if len(s.Data) <= 0 {
+		err := errors.New("empty schema data")
+		base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
+		return err
+	}
+	if s.Source.ID == 0 || len(s.Source.Name) <= 0 {
+		err := errors.New("wrong ralated source")
+		base.NewLog("error", err, "新增schema失败", "models:schema.Add()")
+		return err
+	}
+	err := s.TX.Create(s).Error
+	base.NewLog("", err, "新增schema", "models:schema.Add()")
+	return err
+}
+
+func (s *MSchema) GetBySourceID() error {
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "根据source_id获取schema失败", "models:schema.GetBySourceID()")
+		return err
+	}
+	if s.SourceID == 0 {
+		err := errors.New("zero source id")
+		base.NewLog("error", err, "根据source_id获取schema失败", "models:schema.GetBySourceID()")
+		return err
+	}
+	err := s.TX.Where("col_source_id = ?", s.SourceID).First(s).Error
+	base.NewLog("", err, "根据source_id获取schema", "models:schema.GetBySourceID()")
+	return err
 }

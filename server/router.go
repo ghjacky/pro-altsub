@@ -14,11 +14,13 @@ func generateRoutePath(name string) string {
 }
 
 func (sv *HttpServer) schemaRoutes() {
-
+	srg := sv.Engine.Group(generateRoutePath("schemas"))
+	srg.POST("", handlerv1.AddSchema)
 }
 
 func (sv *HttpServer) eventRoutes() {
-
+	erg := sv.Engine.Group(generateRoutePath("events"))
+	erg.POST("", handlerv1.ReceiveRawEvent)
 }
 
 func (sv *HttpServer) receiverRoutes() {
