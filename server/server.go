@@ -23,6 +23,7 @@ func (sv *HttpServer) RegisterRoutes() {
 	sv.receiverRoutes()
 	sv.subscribeRoutes()
 	sv.maintenanceRoutes()
+	sv.staticRouter()
 }
 
 func (sv *HttpServer) RunForever() error {

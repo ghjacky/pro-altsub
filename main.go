@@ -53,7 +53,13 @@ func parseFlags() {
 func main() {
 	parseFlags()
 	base.Init()
-	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{}, &models.MRule{})
+	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{}, &models.MRule{}, &models.MRuleClause{}, &models.MReceiver{}, &models.MSubscribe{}, &models.MSchemaedEvent{})
+	if err := base.DB().SetupJoinTable(&models.MRule{}, "Receivers", &models.MSubscribe{}); err != nil {
+		base.NewLog("fatal", err, "db join table setup error", "main()")
+	}
+	if err := base.DB().SetupJoinTable(&models.MReceiver{}, "Rules", &models.MSubscribe{}); err != nil {
+		base.NewLog("fatal", err, "db join table setup error", "main()")
+	}
 	ss, err := source.Fetch(base.DB(), nil)
 	if err != nil {
 		base.NewLog("fatal", err, "couldn't fetch sources from mysql", "main()")

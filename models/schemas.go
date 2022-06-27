@@ -3,17 +3,21 @@ package models
 import (
 	"altsub/base"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type MSchema struct {
-	BaseModel
-	Data     JSON    `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
-	EvField  string  `json:"ev_field" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
-	EvType   string  `json:"ev_type" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
-	SourceID uint    `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
-	Source   MSource `json:"source" gorm:"foreignKey:SourceID;references:ID"`
+	ID        uint           `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time      `json:"createdAt"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	TX        *gorm.DB       `json:"-" gorm:"-"`
+	Data      JSON           `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
+	EvField   string         `json:"evField" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
+	EvType    string         `json:"evType" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
+	SourceID  uint           `json:"sourceId" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
+	Source    MSource        `json:"source" gorm:"foreignKey:SourceID;references:ID"`
 }
 
 type MSchemas struct {
@@ -26,15 +30,30 @@ func (*MSchema) TableName() string {
 	return "tb_schemas"
 }
 
+func (s *MSchema) Get() error {
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取schema失败", "models:schema.Get()")
+		return err
+	}
+	if err := s.TX.First(s).Error; err != nil {
+		base.NewLog("error", err, "获取schema", "models:schema.Get()")
+		return err
+	}
+	return nil
+}
+
 func (ss *MSchemas) Fetch() error {
 	if ss.TX == nil {
 		err := errors.New("nil db object")
 		base.NewLog("error", err, "拉取schema失败", "models:schema.Add()")
 		return err
 	}
-	err := ss.PQ.Query(ss.TX, &ss.All).Error
-	base.NewLog("", err, "拉取schema", "models:schema.Add()")
-	return err
+	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
+		base.NewLog("error", err, "拉取schema", "models:schema.Add()")
+		return err
+	}
+	return nil
 }
 
 func (s *MSchema) Add() error {
@@ -60,9 +79,11 @@ func (s *MSchema) Add() error {
 			}
 		}
 	}
-	err := s.TX.Create(s).Error
-	base.NewLog("", err, "新增schema", "models:schema.Add()")
-	return err
+	if err := s.TX.Create(s).Error; err != nil {
+		base.NewLog("error", err, "新增schema", "models:schema.Add()")
+		return err
+	}
+	return nil
 }
 
 func (s *MSchema) GetBySourceID() error {
@@ -76,7 +97,9 @@ func (s *MSchema) GetBySourceID() error {
 		base.NewLog("error", err, "根据source_id获取schema失败", "models:schema.GetBySourceID()")
 		return err
 	}
-	err := s.TX.Where("col_source_id = ?", s.SourceID).First(s).Error
-	base.NewLog("", err, "根据source_id获取schema", "models:schema.GetBySourceID()")
-	return err
+	if err := s.TX.Where("col_source_id = ?", s.SourceID).First(s).Error; err != nil {
+		base.NewLog("error", err, "根据source_id获取schema", "models:schema.GetBySourceID()")
+		return err
+	}
+	return nil
 }

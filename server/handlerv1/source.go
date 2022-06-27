@@ -5,6 +5,7 @@ import (
 	"altsub/models"
 	"altsub/modules/source"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,12 +20,12 @@ func AddSource(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptySource, nil, nil))
 		return
 	}
-	src.BaseModel.TX = base.DB()
+	src.TX = base.DB()
 	if err := source.Add(src); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptySource, nil, nil))
 		return
 	}
-	ctx.JSON(http.StatusOK, newHttpResponse(nil, src, nil))
+	ctx.JSON(http.StatusOK, newHttpResponse(nil, nil, nil))
 }
 
 func FetchSources(ctx *gin.Context) {
@@ -38,4 +39,27 @@ func FetchSources(ctx *gin.Context) {
 	} else {
 		ctx.JSON(http.StatusOK, newHttpResponse(nil, srcs.All, map[string]interface{}{"total": srcs.PQ.Total}))
 	}
+}
+
+func GetSource(ctx *gin.Context) {
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	if id == 0 {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
+		return
+	}
+	var src = models.MSource{ID: uint(id), TX: base.DB()}
+	if err := source.Get(&src); err != nil {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToGetSource, nil, nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, newHttpResponse(nil, src, nil))
+}
+
+func FetchSourceTypes(ctx *gin.Context) {
+	var ss = models.MSources{TX: base.DB()}
+	if err := ss.FetchTypes(); err != nil {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToFetchSourceTypes, nil, nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, newHttpResponse(nil, ss, nil))
 }

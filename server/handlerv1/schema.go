@@ -26,7 +26,7 @@ func AddSchema(ctx *gin.Context) {
 	src.ID = uint(sourceId)
 	src.TX = base.DB()
 	scm.Source = src
-	scm.BaseModel.TX = src.TX
+	scm.TX = src.TX
 	if err := schema.Add(&scm); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToAddSchema, nil, nil))
 		return
@@ -41,8 +41,22 @@ func FetchSchemas(ctx *gin.Context) {
 		return
 	}
 	if schms, err := schema.Fetch(base.DB(), &pq); err != nil {
-		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToQuerySources, nil, nil))
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToQuerySchemas, nil, nil))
 	} else {
 		ctx.JSON(http.StatusOK, newHttpResponse(nil, schms.All, map[string]interface{}{"total": schms.PQ.Total}))
 	}
+}
+
+func GetSchema(ctx *gin.Context) {
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	if id == 0 {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
+		return
+	}
+	var schm = models.MSchema{ID: uint(id), TX: base.DB()}
+	if err := schema.Get(&schm); err != nil {
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToGetSchema, nil, nil))
+		return
+	}
+	ctx.JSON(http.StatusOK, newHttpResponse(nil, schm, nil))
 }

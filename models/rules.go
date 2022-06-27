@@ -3,85 +3,74 @@ package models
 import (
 	"altsub/base"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 const (
-	RuleTypeSubscribe = iota + 1
-	RuleTypeEventRelationship
+	RuleTypeSubscribe         = iota + 1
+	RuleTypeEventRelationship // 告警认领（同一类告警）
+	RuleTypeMaintenance
+	RuleTypeSuppression
 	RuleLogicIntersection = iota - 1
 	RuleLogicConcatenation
-	RuleOpEqual = iota - 3
-	RuleOpGreatThan
-	RuleOpLessThan
-	RuleOpInclude
-	RuleOpRegex
 )
 
 // 规则：（关联：规则、接收者、维护项）
 type MRule struct {
-	BaseModel
-	Name     string   `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex;comment:规则名称"`
-	StartAt  int64    `json:"start_at" gorm:"column:col_start_at;not null;comment:规则生效时间段开始秒级时间戳"`
-	EndAt    int64    `json:"end_at" gorm:"column:col_end_at;not null;comment:规则生效时间段结束秒级时间戳"`
-	PrevID   uint     `json:"prev_id" gorm:"column:col_prev_id;comment:规则链条下一节点id"`
-	Prev     *MRule   `json:"prev" gorm:"foreignKey:PrevID;references:ID"`
-	Logic    int      `json:"logic" gorm:"column:col_logic;not null;default:1;comment:规则内容中每项之间的逻辑关系（且、或）"`
-	Operator int      `json:"operator" gorm:"column:col_operator;not null;default:1;comment:规则内容中每一项大比对符号"`
-	SourceID uint     `json:"source_id" gorm:"column:col_source_id;not null;comment:schema相关联的 source id"`
-	Source   *MSource `json:"source" gorm:"foreignKey:SourceID;references:ID"`
-	Key01    string   `json:"key01" gorm:"column:col_key01;comment:预留字段"`
-	Key02    string   `json:"key02" gorm:"column:col_key02;comment:预留字段"`
-	Key03    string   `json:"key03" gorm:"column:col_key03;comment:预留字段"`
-	Key04    string   `json:"key04" gorm:"column:col_key04;comment:预留字段"`
-	Key05    string   `json:"key05" gorm:"column:col_key05;comment:预留字段"`
-	Key06    string   `json:"key06" gorm:"column:col_key06;comment:预留字段"`
-	Key07    string   `json:"key07" gorm:"column:col_key07;comment:预留字段"`
-	Key08    string   `json:"key08" gorm:"column:col_key08;comment:预留字段"`
-	Key09    string   `json:"key09" gorm:"column:col_key09;comment:预留字段"`
-	Key10    string   `json:"key10" gorm:"column:col_key10;comment:预留字段"`
-	Key11    string   `json:"key11" gorm:"column:col_key11;comment:预留字段"`
-	Key12    string   `json:"key12" gorm:"column:col_key12;comment:预留字段"`
-	Key13    string   `json:"key13" gorm:"column:col_key13;comment:预留字段"`
-	Key14    string   `json:"key14" gorm:"column:col_key14;comment:预留字段"`
-	Key15    string   `json:"key15" gorm:"column:col_key15;comment:预留字段"`
-	Key16    string   `json:"key16" gorm:"column:col_key16;comment:预留字段"`
-	Key17    string   `json:"key17" gorm:"column:col_key17;comment:预留字段"`
-	Key18    string   `json:"key18" gorm:"column:col_key18;comment:预留字段"`
-	Key19    string   `json:"key19" gorm:"column:col_key19;comment:预留字段"`
-	Key20    string   `json:"key20" gorm:"column:col_key20;comment:预留字段"`
-	Key21    string   `json:"key21" gorm:"column:col_key21;comment:预留字段"`
-	Key22    string   `json:"key22" gorm:"column:col_key22;comment:预留字段"`
-	Key23    string   `json:"key23" gorm:"column:col_key23;comment:预留字段"`
-	Key24    string   `json:"key24" gorm:"column:col_key24;comment:预留字段"`
-	Key25    string   `json:"key25" gorm:"column:col_key25;comment:预留字段"`
-	Key26    string   `json:"key26" gorm:"column:col_key26;comment:预留字段"`
-	Key27    string   `json:"key27" gorm:"column:col_key27;comment:预留字段"`
-	Key28    string   `json:"key28" gorm:"column:col_key28;comment:预留字段"`
-	Key29    string   `json:"key29" gorm:"column:col_key29;comment:预留字段"`
-	Key30    string   `json:"key30" gorm:"column:col_key30;comment:预留字段"`
+	// StartAt     int64          `json:"startAt" gorm:"column:col_start_at;not null;comment:规则生效时间段开始秒级时间戳"`
+	// EndAt       int64          `json:"end_at" gorm:"column:col_end_at;not null;comment:规则生效时间段结束秒级时间戳"`
+	//（belongs_to、has_one关系中，如果新增条目时要使外键为空，则须使用*uint类型，因为*类型零值为nil，而uint零值则为0，如果是0而库认为对应id为0的关联项不存在，数据库会报错）
+	Type         uint             `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制）"`
+	ID           uint             `json:"id" gorm:"primarykey"`
+	CreatedAt    time.Time        `json:"createdAt"`
+	DeletedAt    gorm.DeletedAt   `json:"deletedAt" gorm:"index" `
+	TX           *gorm.DB         `json:"-" gorm:"-"`
+	Name         string           `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex:idx_source_rule;comment:规则名称"`
+	Description  string           `json:"description" gorm:"column:col_description;type:text;comment:规则描述信息"`
+	PrevID       *uint            `json:"prevId" gorm:"column:col_prev_id;constraint:OnUpdate:CASCADE,ONDELETE:SET NULL;comment:规则链条下一节点id"`
+	Prev         *MRule           `json:"prev" gorm:"foreignKey:PrevID;references:ID;constraint:OnUpdate:CASCADE,ONDELETE:SET NULL"`
+	Logic        int              `json:"logic" gorm:"column:col_logic;not null;default:1;comment:规则内容中每项之间的逻辑关系（且、或）"`
+	SourceID     uint             `json:"sourceId" gorm:"column:col_source_id;not null;uniqueIndex:idx_source_rule;comment:schema相关联的 source id"`
+	Source       *MSource         `json:"source" gorm:"foreignKey:SourceID;references:ID"`
+	Maintenances []MMaintenance   `json:"maintenances" gorm:"many2many:tb_maintenances_rules;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Clauses      []MRuleClause    `json:"clauses" gorm:"foreignKey:RuleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Receivers    []MReceiver      `json:"receivers" gorm:"many2many:tb_subscribes;references:ID;joinForeignKey:col_rule_id;joinReferences:col_receiver_id;constraint:OnDelete:CASCADE;"`
+	Events       []MSchemaedEvent `json:"events" gorm:"many2many:tb_events_rules"`
 }
 
 type MRules struct {
 	PQ  PageQuery
 	TX  *gorm.DB
-	All []*MRule
+	All []MRule
 }
 
 func (*MRule) TableName() string {
 	return "tb_rules"
 }
 
-func (rs *MRules) Fetch() error {
+func (r *MRule) Get(preloads ...string) error {
+	for _, p := range preloads {
+		r.TX = r.TX.Preload(p)
+	}
+	return r.TX.First(r).Error
+}
+
+func (rs *MRules) Fetch(preloads ...string) error {
 	if rs.TX == nil {
 		err := errors.New("nil db object")
 		base.NewLog("error", err, "获取规则失败", "models:rule.Fetch()")
 		return err
 	}
-	err := rs.PQ.Query(rs.TX, rs.All).Error
-	base.NewLog("", err, "获取规则", "models:rule.Fetch()")
-	return err
+	for _, p := range preloads {
+		rs.TX = rs.TX.Preload(p)
+	}
+	if err := rs.PQ.Query(rs.TX, &rs.All).Error; err != nil {
+		base.NewLog("error", err, "获取规则", "models:rule.Fetch()")
+		return err
+	}
+	return nil
 }
 
 func (r *MRule) Add() error {
@@ -103,12 +92,6 @@ func (r *MRule) Add() error {
 		return err
 	}
 
-	if r.Operator != RuleOpEqual && r.Operator != RuleOpGreatThan && r.Operator != RuleOpInclude && r.Operator != RuleOpLessThan && r.Operator != RuleOpRegex {
-		err := errors.New("wrong rule compare operator")
-		base.NewLog("error", err, "新增规则失败", "models:rule.Add()")
-		return err
-	}
-
 	if r.Source.ID == 0 {
 		if len(r.Source.Name) == 0 {
 			err := errors.New("wrong ralated source")
@@ -122,7 +105,98 @@ func (r *MRule) Add() error {
 		}
 	}
 
-	err := r.TX.Create(r).Error
-	base.NewLog("", err, "新增规则", "models:rule.Add()")
-	return err
+	if err := r.TX.Create(r).Error; err != nil {
+		base.NewLog("error", err, "新增规则", "models:rule.Add()")
+		return err
+	}
+	return nil
+}
+
+func (r *MRule) GetByNameAndSource() error {
+	if r.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取规则失败", "models:rule.GetByNameAndSource()")
+		return err
+	}
+	if len(r.Name) <= 0 || r.SourceID == 0 {
+		err := errors.New("empty rule name or source id")
+		base.NewLog("error", err, "获取规则失败", "models:rule.GetByNameAndSource()")
+		return err
+	}
+	if err := r.TX.Where("col_name = ? and col_source_id = ?", r.Name, r.SourceID).First(r).Error; err != nil {
+		base.NewLog("error", err, "获取规则", "models:rule.GetByNameAndSource()")
+		return err
+	}
+	return nil
+}
+
+func (r *MRule) GetChain(preloads ...string) error {
+	db := base.DB()
+	if db == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取规则链", "models:rule.GetChain()")
+		return err
+	}
+	if r.ID == 0 {
+		if len(r.Name) <= 0 || r.SourceID == 0 {
+			err := errors.New("empty id and (name or source id) of rule")
+			base.NewLog("error", err, "获取规则链失败", "models:rule.GetChain()")
+			return err
+		} else {
+			if err := r.GetByNameAndSource(); err != nil {
+				base.NewLog("error", err, "获取规则链失败", "models:rule.GetChain()")
+				return err
+			}
+		}
+	}
+	for _, prl := range preloads {
+		db = db.Preload(prl)
+	}
+	if err := db.First(r).Error; err != nil {
+		base.NewLog("error", err, "获取规则链失败", "models:rule.GetChain()")
+		return err
+	} else {
+		if r.PrevID == nil {
+			return nil
+		} else {
+			if r.Prev == nil {
+				err := errors.New("no preloading prev")
+				base.NewLog("error", err, "获取规则链失败", "models:rule.GetChain()")
+				return err
+			}
+			r.Prev.TX = db
+			if err := r.Prev.GetChain("Prev", "Clauses"); err != nil {
+				base.NewLog("error", err, "获取规则链", "models:rule.GetChain()")
+				return err
+			}
+			return nil
+		}
+	}
+}
+
+func (r *MRule) Assign(rcvs []MReceiver) error {
+	if r.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "指派失败", "models:rule.Assign()")
+		return err
+	}
+
+	if err := r.TX.Model(r).Association("Receivers").Append(&rcvs); err != nil {
+		base.NewLog("error", err, "指派规则失败", "models:rule.Assign()")
+		return err
+	}
+	return nil
+}
+
+func (r *MRule) Delete() error {
+	if r.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "规则删除失败", "models:rule.Delete()")
+		return err
+	}
+	if err := r.TX.Delete(r).Error; err != nil {
+		base.NewLog("error", err, "规则删除失败", "models:rule.Delete()")
+		return err
+	}
+	return nil
 }

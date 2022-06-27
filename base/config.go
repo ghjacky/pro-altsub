@@ -14,6 +14,7 @@ type Configuration struct {
 	MainConfig
 	MysqlConf
 	KafkaConf
+	NotificationConf
 }
 
 type MainConfig struct {
@@ -22,6 +23,8 @@ type MainConfig struct {
 	Level              string
 	LogRotateMegaBytes int
 	LogRetainDays      int
+	Domain             string
+	StaticDir          string
 }
 
 func initConfig() {

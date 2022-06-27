@@ -3,6 +3,8 @@ module altsub
 go 1.18
 
 require (
+	github.com/gin-contrib/gzip v0.0.5
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/sirupsen/logrus v1.8.1

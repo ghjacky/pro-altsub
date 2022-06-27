@@ -26,10 +26,15 @@ func Fetch(tx *gorm.DB, pq *models.PageQuery) (*models.MSources, error) {
 		PQ:  *pq,
 		All: []*models.MSource{},
 	}
-	return ss, ss.Fetch()
+	return ss, ss.Fetch("Rules")
 }
 
 func Add(src *models.MSource) (err error) {
+	if src.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "新增数据源失败", "source:Add()")
+		return err
+	}
 	if err := src.Add(); err != nil {
 		return err
 	} else {
@@ -42,5 +47,24 @@ func Add(src *models.MSource) (err error) {
 }
 
 func GetByName(src *models.MSource) (err error) {
+	if src.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "根据名称获取数据源失败", "source:GetByName()")
+		return err
+	}
+	if len(src.Name) <= 0 {
+		err := errors.New("empty source name")
+		base.NewLog("error", err, "根据名称获取数据源失败", "source:GetByName()")
+		return err
+	}
 	return src.GetByName()
+}
+
+func Get(src *models.MSource) error {
+	if src.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取数据源失败", "source:Get()")
+		return err
+	}
+	return src.Get()
 }

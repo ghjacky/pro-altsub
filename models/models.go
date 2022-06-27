@@ -8,18 +8,17 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
 )
 
-type BaseModel struct {
-	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index" `
-	TX        *gorm.DB       `json:"-" gorm:"-"`
-}
+// type BaseModel struct {
+// 	ID        uint           `json:"id" gorm:"primarykey"`
+// 	CreatedAt time.Time      `json:"createdAt"`
+// 	UpdatedAt time.Time      `json:"updated_at"`
+// 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+// 	TX        *gorm.DB       `json:"-" gorm:"-"`
+// }
 
 // 分页查询
 type PageQuery struct {

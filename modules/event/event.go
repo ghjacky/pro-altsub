@@ -28,25 +28,52 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 					base.NewLog("error", err, "从buffer读取并解析事件失败", "ReadAndParseEventFromBufferForever()")
 					continue
 				}
-				var ev = models.MEvent{}
-				ev.TX = schm.TX
-				ev.Data = rawEv
+				// 原始事件入库
+				var ev = models.MEvent{Data: rawEv}
+				if err := StoreRawToDb(&ev); err != nil {
+					base.NewLog("warn", err, "事件入库失败", "ReadAndParseEventFromBufferForever()")
+				}
 				if parsedEvs, err := schema.ParseEvent(&schm, &ev); err != nil {
 					base.NewLog("error", err, "事件解析失败", "ReadAndParseEventFromBufferForever()")
 					continue
 				} else {
 					base.NewLog("trace", nil, fmt.Sprintf("事件解析：%#v", parsedEvs), "ReadAndParseEventFromBufferForever()")
-					// 事件入库
-					if err := StoreToDb(&ev); err != nil {
-						base.NewLog("warn", err, "事件入库失败", "ReadAndParseEventFromBufferForever()")
-					}
-					// 事件处理-维护检测
-					// 事件处理-抑制检测
-					// 事件处理-认领检测
-					// 事件处理-指派(订阅)检测
-					// 事件处理-告警发送
-					// 事件发送记录（事件未发送（维护、抑制）、事件已发送但失败、事件已发送且成功）
+					for _, parseEv := range parsedEvs {
+						go func(parseEv schema.SchemaedEvent) {
+							// 事件处理-匹配规则
+							var rs []models.MRule = checkRules(src, parseEv)
+							// 解析后数据入库
+							go func(parseEv schema.SchemaedEvent, rs []models.MRule) {
+								if err := StoreParsedEvToDb(parseEv, rs); err != nil {
+									base.NewLog("warn", err, "解析后事件存储失败", "ReadAndParseEventFromBufferForever()")
+									return
+								}
+							}(parseEv, rs)
+							// 事件处理-维护检测
+							if checkMaintenance(rs) {
+								base.NewLog("info", nil, "事件检测 - 检测到相关维护项", "ReadAndParseEventFromBufferForever()")
+								//
+								// TODO：检测到维护事项，是否需要记录入库？
+								//
+								return
+							}
+							// 事件处理-抑制检测
+							// 事件处理-认领检测
+							// 事件处理-指派(订阅)检测
+							if rcvs := checkSubscribe(rs); len(rcvs) > 0 {
+								// 事件处理-告警发送
+								Notice(parseEv, rcvs)
+							}
 
+							base.NewLog("debug", nil, "发送至全局接收者", "ReadAndParseEventFromBufferForever()")
+							// send to global group
+
+							base.NewLog("debug", nil, "发送至默认接收者", "ReadAndParseEventFromBufferForever()")
+							// send to default group
+
+							// 事件发送记录（事件未发送（维护、抑制）、事件已发送但失败、事件已发送且成功）
+						}(parseEv)
+					}
 				}
 			}
 		}(src)

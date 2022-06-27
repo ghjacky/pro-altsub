@@ -11,20 +11,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type SchemaItem struct {
+type SchemaedEventItem struct {
 	Description string      `json:"description"`
-	Name        string      `json:"name"`
+	Key         string      `json:"key"`
 	CName       string      `json:"cname"`
 	From        string      `json:"from"`
 	FType       string      `json:"ftype"` // 字段类型（string、int、array、map等）
 	SType       string      `json:"stype"` // 告警消息展示类型（pic、link、text等）
 	Priority    int         `json:"priority"`
-	Value       interface{} `json:"-"`
+	Value       interface{} `json:"value"`
 }
 
-type SchemaItems []*SchemaItem
+type SchemaedEvent []*SchemaedEventItem
 
-type SchemaItemsSlice []SchemaItems
+type SchemaedEvents []SchemaedEvent
 
 func Fetch(tx *gorm.DB, pq *models.PageQuery) (*models.MSchemas, error) {
 	if tx == nil {
@@ -52,7 +52,7 @@ func Add(schm *models.MSchema) (err error) {
 		base.NewLog("error", err, "新增schema失败", "schema:Add()")
 		return
 	}
-	if schm.BaseModel.TX == nil {
+	if schm.TX == nil {
 		err = errors.New("nil db object")
 		base.NewLog("error", err, "新增schema失败", "schema:Add()")
 		return
@@ -61,7 +61,7 @@ func Add(schm *models.MSchema) (err error) {
 }
 
 func GetBySourceName(schm *models.MSchema, srcName string) (err error) {
-	if schm.BaseModel.TX == nil {
+	if schm.TX == nil {
 		err = errors.New("nil db object")
 		base.NewLog("error", err, "根据source名称获取schema失败", "schema:GetBySourceName()")
 		return
@@ -72,21 +72,32 @@ func GetBySourceName(schm *models.MSchema, srcName string) (err error) {
 		return
 	}
 	var src = models.MSource{}
-	src.BaseModel.TX = schm.BaseModel.TX
+	src.TX = schm.TX
 	src.Name = srcName
 	if err = src.GetByName(); err != nil {
 		base.NewLog("error", err, "根据source名称获取schema失败", "schema:GetBySourceName()")
 		return
 	}
 	schm.SourceID = src.ID
-	err = schm.GetBySourceID()
-	base.NewLog("", err, "根据source名称获取schema", "schema:GetBySourceName()")
-	return
+	if err = schm.GetBySourceID(); err != nil {
+		base.NewLog("error", err, "根据source名称获取schema", "schema:GetBySourceName()")
+		return
+	}
+	return nil
 }
 
-func ParseEvent(schm *models.MSchema, ev *models.MEvent) (SchemaItemsSlice, error) {
+func Get(schm *models.MSchema) error {
+	if schm.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取schema失败", "schema:Get()")
+		return err
+	}
+	return schm.Get()
+}
+
+func ParseEvent(schm *models.MSchema, ev *models.MEvent) (SchemaedEvents, error) {
 	// schema数据自身解析
-	var schmItems = &SchemaItems{}
+	var schmItems = &SchemaedEvent{}
 	if err := json.Unmarshal(schm.Data, &schmItems); err != nil {
 		base.NewLog("error", err, "事件解析失败", "schema:ParseEvent()")
 		return nil, err
@@ -107,7 +118,7 @@ func ParseEvent(schm *models.MSchema, ev *models.MEvent) (SchemaItemsSlice, erro
 			rawev = rawev.(map[string]interface{})[evf]
 		}
 	}
-	var parsedEvma = SchemaItemsSlice{}
+	var parsedEvma = SchemaedEvents{}
 	switch schm.EvType {
 	case "array":
 		raweva, _ = rawev.([]interface{})
@@ -120,25 +131,25 @@ func ParseEvent(schm *models.MSchema, ev *models.MEvent) (SchemaItemsSlice, erro
 		rawevm, _ = rawev.(map[string]interface{})
 		ev := rawevm
 		schmItems.parseEvent(ev)
-		parsedEvma = []SchemaItems{*schmItems}
+		parsedEvma = []SchemaedEvent{*schmItems}
 	}
 	return parsedEvma, nil
 }
 
-func (schemaItems *SchemaItems) parseEvent(ev map[string]interface{}) {
-	for i, schemaItem := range *schemaItems {
+func (SchemaedEvent *SchemaedEvent) parseEvent(ev map[string]interface{}) {
+	for i, SchemaedEventItem := range *SchemaedEvent {
 		var v = func(e map[string]interface{}) map[string]interface{} { return e }(ev)
-		fieldsPathSlice := strings.Split(schemaItem.From, ".")
+		fieldsPathSlice := strings.Split(SchemaedEventItem.From, ".")
 		for n, field := range fieldsPathSlice {
 			if n+1 < len(fieldsPathSlice) {
 				v, _ = v[field].(map[string]interface{})
 			} else {
-				(*schemaItems)[i].Value = v[field]
+				(*SchemaedEvent)[i].Value = v[field]
 			}
 		}
 	}
 	// 对处理完成的事件根据字段优先级排序
-	sort.Slice(*schemaItems, func(i, j int) bool {
-		return (*schemaItems)[i].Priority > (*schemaItems)[j].Priority
+	sort.Slice(*SchemaedEvent, func(i, j int) bool {
+		return (*SchemaedEvent)[i].Priority > (*SchemaedEvent)[j].Priority
 	})
 }

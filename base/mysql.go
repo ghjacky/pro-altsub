@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -40,5 +41,8 @@ func MigrateDB(dbs ...interface{}) {
 }
 
 func DB() *gorm.DB {
+	if Config.MainConfig.Level == logrus.DebugLevel.String() || Config.MainConfig.Level == logrus.TraceLevel.String() {
+		return db.Debug()
+	}
 	return db
 }
