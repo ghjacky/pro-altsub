@@ -53,7 +53,7 @@ func parseFlags() {
 func main() {
 	parseFlags()
 	base.Init()
-	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{}, &models.MRule{}, &models.MRuleClause{}, &models.MReceiver{}, &models.MSubscribe{}, &models.MSchemaedEvent{})
+	base.MigrateDB(&models.MSource{}, &models.MSchema{}, &models.MEvent{}, &models.MRule{}, &models.MRuleClause{}, &models.MReceiver{}, &models.MSubscribe{}, &models.MSchemaedEvent{}, &models.MDuty{}, &models.MDutyGroup{}, &models.MDutyAt{})
 	if err := base.DB().SetupJoinTable(&models.MRule{}, "Receivers", &models.MSubscribe{}); err != nil {
 		base.NewLog("fatal", err, "db join table setup error", "main()")
 	}

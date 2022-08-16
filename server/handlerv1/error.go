@@ -35,8 +35,8 @@ var (
 		code:    1004,
 		message: "告警源查询失败",
 	}
-	ErrorFailedToFetchSourceTypes ResponseError = ResponseError {
-		code: 1005,
+	ErrorFailedToFetchSourceTypes ResponseError = ResponseError{
+		code:    1005,
 		message: "获取告警源类型失败",
 	}
 	ErrorEmptySchemaData ResponseError = ResponseError{
@@ -62,6 +62,10 @@ var (
 	ErrorEmptyRuleName ResponseError = ResponseError{
 		code:    4002,
 		message: "规则名称为空",
+	}
+	ErrorEmptyRuleNameOrZeroSourceID ResponseError = ResponseError{
+		code:    4001,
+		message: "规则名称为空或sourceId为0",
 	}
 	ErrorFailedToFetchRuleChain ResponseError = ResponseError{
 		code:    4003,
@@ -91,8 +95,8 @@ var (
 		code:    5004,
 		message: "获取接收者详情失败",
 	}
-	ErrorFailedToDeleteReceiver ResponseError = ResponseError {
-		code: 5005,
+	ErrorFailedToDeleteReceiver ResponseError = ResponseError{
+		code:    5005,
 		message: "删除接收者失败",
 	}
 	ErrorFailedToSubscribeRules ResponseError = ResponseError{
@@ -106,6 +110,14 @@ var (
 	ErrorFailedToFetchSubscribes ResponseError = ResponseError{
 		code:    6004,
 		message: "获取订阅/指派关系失败",
+	}
+	ErrorFailedToAddDuty ResponseError = ResponseError{
+		code:    7002,
+		message: "新增排班班次失败",
+	}
+	ErrorFailedToFetchDuties ResponseError = ResponseError{
+		code:    7003,
+		message: "获取排班班次列表失败",
 	}
 )
 

@@ -1,6 +1,11 @@
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
 
 type HttpServer struct {
 	Engine *gin.Engine
@@ -16,6 +21,17 @@ func NewServer(addr string, mode string) *HttpServer {
 }
 
 func (sv *HttpServer) RegisterRoutes() {
+	sv.Engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "OPTIONS", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 	sv.sourceRoutes()
 	sv.schemaRoutes()
 	sv.eventRoutes()
@@ -23,6 +39,7 @@ func (sv *HttpServer) RegisterRoutes() {
 	sv.receiverRoutes()
 	sv.subscribeRoutes()
 	sv.maintenanceRoutes()
+	sv.dutyRoutes()
 	sv.staticRouter()
 }
 

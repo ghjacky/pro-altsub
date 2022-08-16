@@ -15,7 +15,7 @@ import (
 // type BaseModel struct {
 // 	ID        uint           `json:"id" gorm:"primarykey"`
 // 	CreatedAt time.Time      `json:"createdAt"`
-// 	UpdatedAt time.Time      `json:"updated_at"`
+// 	UpdatedAt time.Time      `json:"updatedAt"`
 // 	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
 // 	TX        *gorm.DB       `json:"-" gorm:"-"`
 // }

@@ -60,7 +60,7 @@ func FetchRuleChain(ctx *gin.Context) {
 		return
 	}
 	if r.ID == 0 && (len(r.Name) <= 0 || r.SourceID == 0) {
-		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptyRuleName, nil, nil))
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptyRuleNameOrZeroSourceID, nil, nil))
 		return
 	}
 	r.TX = base.DB()

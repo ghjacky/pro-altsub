@@ -66,6 +66,20 @@ func (sv *HttpServer) maintenanceRoutes() {
 
 }
 
+func (sv *HttpServer) dutyRoutes() {
+	drg := sv.Engine.Group(generateRoutePath("duty"))
+	drg.GET("", handlerv1.FetchDuties)
+	drg.POST("", handlerv1.AddDuty)
+}
+
+func (sv *HttpServer) issueRoutes() {
+	irg := sv.Engine.Group(generateRoutePath("issues"))
+	irg.GET("", handlerv1.FetchIssueHandlings)
+	irg.POST("", handlerv1.AddIssueHandling)
+	irg.DELETE("/:id", handlerv1.DeleteIssueHandling)
+	irg.GET("/:id", handlerv1.GetIssueHandling)
+}
+
 func (sv *HttpServer) staticRouter() {
 	sv.Engine.Use(gzip.Gzip(gzip.BestCompression, gzip.WithExcludedPathsRegexs([]string{`^/api/.+$`})))
 	sv.Engine.Use(static.Serve("/static", static.LocalFile(base.Config.MainConfig.StaticDir, false)))
