@@ -60,6 +60,19 @@ func Add(schm *models.MSchema) (err error) {
 	return schm.Add()
 }
 
+func Update(schm *models.MSchema) (err error) {
+	if schm == nil || len(schm.Data) <= 0 {
+		err = errors.New("empty schema")
+		base.NewLog("error", err, "更新schema失败", "schema:Update()")
+		return err
+	}
+	if err := schm.Get(); err != nil {
+		base.NewLog("error", err, "更新schema失败", "schema:Update()")
+		return err
+	}
+	return schm.Update()
+}
+
 func GetBySourceName(schm *models.MSchema, srcName string) (err error) {
 	if schm.TX == nil {
 		err = errors.New("nil db object")

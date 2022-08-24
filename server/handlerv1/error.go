@@ -55,6 +55,10 @@ var (
 		code:    2004,
 		message: "schema查询失败",
 	}
+	ErrorFailedToUpdateSchema ResponseError = ResponseError{
+		code:    2005,
+		message: "schema更新失败",
+	}
 	ErrorFailedToWriteEvent ResponseError = ResponseError{
 		code:    3002,
 		message: "事件写入失败",

@@ -86,6 +86,36 @@ func (s *MSchema) Add() error {
 	return nil
 }
 
+func (s *MSchema) Update() error {
+	if s.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "更新schema失败", "models:schema.Update()")
+		return err
+	}
+	if len(s.Data) <= 0 {
+		err := errors.New("empty schema data")
+		base.NewLog("error", err, "更新schema失败", "models:schema.Update()")
+		return err
+	}
+	if s.Source.ID == 0 {
+		if len(s.Source.Name) == 0 {
+			err := errors.New("wrong ralated source")
+			base.NewLog("error", err, "更新schema失败", "models:schema.Update()")
+			return err
+		} else {
+			if err := s.Source.GetByName(); err != nil {
+				base.NewLog("error", err, "更新schema失败", "models:schema.Update()")
+				return err
+			}
+		}
+	}
+	if err := s.TX.Save(s).Error; err != nil {
+		base.NewLog("error", err, "更新schema", "models:schema.Update()")
+		return err
+	}
+	return nil
+}
+
 func (s *MSchema) GetBySourceID() error {
 	if s.TX == nil {
 		err := errors.New("nil db object")
