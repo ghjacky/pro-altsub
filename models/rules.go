@@ -24,15 +24,15 @@ type MRule struct {
 	//（belongs_to、has_one关系中，如果新增条目时要使外键为空，则须使用*uint类型，因为*类型零值为nil，而uint零值则为0，如果是0而库认为对应id为0的关联项不存在，数据库会报错）
 	Type         uint             `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制）"`
 	ID           uint             `json:"id" gorm:"primarykey"`
-	CreatedAt    time.Time        `json:"createdAt"`
-	DeletedAt    gorm.DeletedAt   `json:"deletedAt" gorm:"index" `
+	CreatedAt    time.Time        `json:"created_at"`
+	DeletedAt    gorm.DeletedAt   `json:"deleted_at" gorm:"index" `
 	TX           *gorm.DB         `json:"-" gorm:"-"`
 	Name         string           `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex:idx_source_rule;comment:规则名称"`
 	Description  string           `json:"description" gorm:"column:col_description;type:text;comment:规则描述信息"`
-	PrevID       *uint            `json:"prevId" gorm:"column:col_prev_id;constraint:OnUpdate:CASCADE,ONDELETE:SET NULL;comment:规则链条下一节点id"`
+	PrevID       *uint            `json:"prev_id" gorm:"column:col_prev_id;constraint:OnUpdate:CASCADE,ONDELETE:SET NULL;comment:规则链条下一节点id"`
 	Prev         *MRule           `json:"prev" gorm:"foreignKey:PrevID;references:ID;constraint:OnUpdate:CASCADE,ONDELETE:SET NULL"`
 	Logic        int              `json:"logic" gorm:"column:col_logic;not null;default:1;comment:规则内容中每项之间的逻辑关系（且、或）"`
-	SourceID     uint             `json:"sourceId" gorm:"column:col_source_id;not null;uniqueIndex:idx_source_rule;comment:schema相关联的 source id"`
+	SourceID     uint             `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex:idx_source_rule;comment:schema相关联的 source id"`
 	Source       *MSource         `json:"source" gorm:"foreignKey:SourceID;references:ID"`
 	Maintenances []MMaintenance   `json:"maintenances" gorm:"many2many:tb_maintenances_rules;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Clauses      []MRuleClause    `json:"clauses" gorm:"foreignKey:RuleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
@@ -66,7 +66,7 @@ func (rs *MRules) Fetch(preloads ...string) error {
 	for _, p := range preloads {
 		rs.TX = rs.TX.Preload(p)
 	}
-	if err := rs.PQ.Query(rs.TX, &rs.All).Error; err != nil {
+	if err := rs.PQ.Query(rs.TX, &rs.All, &MRule{}).Error; err != nil {
 		base.NewLog("error", err, "获取规则", "models:rule.Fetch()")
 		return err
 	}

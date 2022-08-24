@@ -11,8 +11,8 @@ import (
 
 type MSource struct {
 	ID          uint           `json:"id" gorm:"primarykey"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	DeletedAt   gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX          *gorm.DB       `json:"-" gorm:"-"`
 	Name        string         `json:"name" gorm:"column:col_name;type:varchar(32);not null;uniqueIndex;comment:告警源名称"`
 	Type        string         `json:"type" gorm:"column:col_type;type:varchar(32);not null;comment:告警源类型"`
@@ -39,7 +39,7 @@ func (ss *MSources) Fetch(preloads ...string) error {
 	for _, p := range preloads {
 		ss.TX = ss.TX.Preload(p)
 	}
-	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
+	if err := ss.PQ.Query(ss.TX, &ss.All, &MSource{}).Error; err != nil {
 		base.NewLog("error", err, "拉取告警源", "models:source.Fetch()")
 		return err
 	}

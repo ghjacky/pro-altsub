@@ -14,13 +14,13 @@ const (
 )
 
 type MSubscribe struct {
-	CreatedAt   time.Time `json:"createdAt" form:"-"`
+	CreatedAt   time.Time `json:"created_at" form:"-"`
 	Name        string    `json:"name" form:"name" gorm:"column:col_name;comment:订阅或指派名称"`
 	Description string    `json:"description" form:"description" gorm:"column:col_description;type:text;comment:订阅或指派描述"`
-	StartAt     int64     `json:"startAt" form:"start_at" gorm:"column:col_start_at;not null;comment:订阅或指派生效时段开始秒级时间戳"`
-	EndAt       int64     `json:"endAt" form:"end_at" gorm:"column:col_end_at;not null;comment:订阅或指派生效时段结束秒级时间戳"`
-	ReceiverID  uint      `json:"receiverId" form:"-" gorm:"column:col_receiver_id;primaryKey"`
-	RuleID      uint      `json:"ruleId" form:"-" gorm:"column:col_rule_id;primaryKey"`
+	StartAt     int64     `json:"start_at" form:"start_at" gorm:"column:col_start_at;not null;comment:订阅或指派生效时段开始秒级时间戳"`
+	EndAt       int64     `json:"end_at" form:"end_at" gorm:"column:col_end_at;not null;comment:订阅或指派生效时段结束秒级时间戳"`
+	ReceiverID  uint      `json:"receiver_id" form:"-" gorm:"column:col_receiver_id;primaryKey"`
+	RuleID      uint      `json:"rule_id" form:"-" gorm:"column:col_rule_id;primaryKey"`
 	Type        int       `json:"type" form:"type" gorm:"column:col_type;comment:订阅、指派"`
 	Receiver    MReceiver `json:"receiver" form:"-" gorm:"-"`
 	Rule        MRule     `json:"rule" form:"-" gorm:"-"`
@@ -60,7 +60,7 @@ func (ss *MSubscribes) Fetch() error {
 		base.NewLog("error", err, "获取订阅/指派关系失败", "models:subscribes.fetch()")
 		return err
 	}
-	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
+	if err := ss.PQ.Query(ss.TX, &ss.All, &MSubscribe{}).Error; err != nil {
 		base.NewLog("error", err, "获取订阅/指派关系失败", "models:subscribes.fetch()")
 		return err
 	}

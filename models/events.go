@@ -10,7 +10,7 @@ import (
 
 type MEvent struct {
 	ID        uint      `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `json:"created_at"`
 	TX        *gorm.DB  `json:"-" gorm:"-"`
 	Data      JSON      `json:"data" gorm:"column:col_data;not null;comment:告警事件原始数据"`
 }
@@ -40,7 +40,7 @@ func (ev *MEvent) Add() error {
 
 type MSchemaedEvent struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `json:"created_at"`
 	TX        *gorm.DB  `json:"-" gorm:"-"`
 	Data      JSON      `json:"data" gorm:"column:col_data;not null;comment:解析过后的告警事件数据"` // SchemaedEvent
 	Rules     []MRule   `json:"rules" gorm:"many2many:tb_events_rules"`
@@ -89,7 +89,7 @@ func (ses *MSchemaedEvents) FetchAfter(t time.Time) error {
 		return err
 	}
 	tstring := t.Format("2006-01-02 15:04:05")
-	if err := ses.TX.Where("createdAt > ?", tstring).Find(&ses.All).Error; err != nil {
+	if err := ses.TX.Where("created_at > ?", tstring).Find(&ses.All).Error; err != nil {
 		base.NewLog("error", err, "获取指定时间段解析后告警数据", "models:schemaedEvent.AppendRule()")
 		return err
 	}

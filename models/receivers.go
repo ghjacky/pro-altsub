@@ -21,14 +21,14 @@ const (
 
 type MReceiver struct {
 	ID          uint           `json:"id" gorm:"primarykey"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	DeletedAt   gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX          *gorm.DB       `json:"-" gorm:"-"`
 	Type        int            `json:"type" gorm:"column:col_type;not null;default:1;uniqueIndex:idx_name_type;comment:告警接收者类型标志"`
 	Name        string         `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex:idx_name_type;comment:告警接收者名称"`
 	Description string         `json:"description" gorm:"column:col_description;type:text;comment:告警接收者描述信息"`
 	Auth        JSON           `json:"auth" gorm:"column:col_auth;not null;comment:告警接收者认证信息"`
-	AuthHash    string         `json:"authHash" gorm:"column:col_auth_hash;type:varchar(64);not null;uniqueIndex;comment:认证信息hash"`
+	AuthHash    string         `json:"auth_hash" gorm:"column:col_auth_hash;type:varchar(64);not null;uniqueIndex;comment:认证信息hash"`
 	Rules       []MRule        `json:"rules" gorm:"many2many:tb_subscribes;foreignKey:ID;joinForeignKey:col_receiver_id;joinReferences:col_rule_id;constraint:OnDelete:CASCADE;"`
 }
 
@@ -67,7 +67,7 @@ func (rcvs *MReceivers) Fetch(preloads ...string) error {
 	for _, p := range preloads {
 		rcvs.TX = rcvs.TX.Preload(p)
 	}
-	if err := rcvs.PQ.Query(rcvs.TX, &rcvs.All).Error; err != nil {
+	if err := rcvs.PQ.Query(rcvs.TX, &rcvs.All, &MReceiver{}).Error; err != nil {
 		base.NewLog("error", err, "获取接收者", "models:receiver.Fetch()")
 		return err
 	}

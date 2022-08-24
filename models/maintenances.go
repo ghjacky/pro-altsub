@@ -10,13 +10,13 @@ import (
 
 type MMaintenance struct {
 	ID          uint           `json:"id" gorm:"primarykey"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	DeletedAt   gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt   time.Time      `json:"created_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX          *gorm.DB       `json:"-" gorm:"-"`
 	Name        string         `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex;comment:维护项名称，唯一"`
 	Description string         `json:"description" gorm:"column:col_description;type:text;comment:维护项描述信息"`
-	StartAt     int64          `json:"startAt" gorm:"column:col_start_at;not null;comment:维护项生效时段开始秒级时间戳"`
-	EndAt       int64          `json:"endAt" gorm:"column:col_end_at;not null;comment:维护项生效时段结束秒级时间戳"`
+	StartAt     int64          `json:"start_at" gorm:"column:col_start_at;not null;comment:维护项生效时段开始秒级时间戳"`
+	EndAt       int64          `json:"end_at" gorm:"column:col_end_at;not null;comment:维护项生效时段结束秒级时间戳"`
 	Rules       []MRule        `json:"rules" gorm:"many2many:tb_maintenances_rules"`
 }
 

@@ -32,9 +32,9 @@ func (MUser) TableName() string {
 /////// 排班时间
 type MDutyAt struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX        *gorm.DB       `json:"-" gorm:"-"`
 	StartAt   int64          `json:"startAt" gorm:"column:col_start_at"`
 	EndAt     int64          `json:"endAt" gorm:"column:col_end_at"`
@@ -58,9 +58,9 @@ func (MDutyAt) TableName() string {
 ////// 排班分组
 type MDutyGroup struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	TX        *gorm.DB       `json:"-" gorm:"-"`
 	Name      string         `json:"name" gorm:"column:col_name"`
 	DutyID    uint           `json:"dutyId" gorm:"column:col_duty_id;not null"`
@@ -81,9 +81,9 @@ func (MDutyGroup) TableName() string {
 ////// 排班班次
 type MDuty struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX        *gorm.DB       `json:"-" gorm:"-"`
 	Name      string         `json:"name" gorm:"type:varchar(64);column:col_name;not null;uniqueIndex"`
 	Groups    []MDutyGroup   `json:"groups" gorm:"foreignKey:DutyID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
@@ -97,7 +97,7 @@ type MDuties struct {
 	All []*MDuty
 }
 
-func (MDuty) TableName() string {
+func (*MDuty) TableName() string {
 	return "tb_duties"
 }
 
@@ -137,7 +137,7 @@ func (ds *MDuties) Fetch(preloads ...string) error {
 	for _, p := range preloads {
 		ds.TX = ds.TX.Preload(p)
 	}
-	return ds.PQ.Query(ds.TX, &ds.All).Error
+	return ds.PQ.Query(ds.TX, &ds.All, &MDuty{}).Error
 }
 
 func (d *MDuty) AddGroup(g *MDutyGroup) error {
@@ -165,9 +165,9 @@ const (
 
 type MIssueHandling struct {
 	ID          uint           `json:"id" gorm:"primarykey"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	UpdatedAt   time.Time      `json:"updatedAt"`
-	DeletedAt   gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX          *gorm.DB       `json:"-" gorm:"-"`
 	Title       string         `json:"title" gorm:"column:col_title;not null"`
 	Description string         `json:"description" gorm:"type:text;column:col_description"`
@@ -231,5 +231,5 @@ func (ihs *MIssueHandlings) Fetch(preloads ...string) error {
 	for _, p := range preloads {
 		ihs.TX = ihs.TX.Preload(p)
 	}
-	return ihs.PQ.Query(ihs.TX, &ihs.All).Error
+	return ihs.PQ.Query(ihs.TX, &ihs.All, &MDuty{}).Error
 }

@@ -21,6 +21,10 @@ func ReceiveRawEvent(ctx *gin.Context) {
 	}
 	if err := event.Receive( srcName, ev); err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToWriteEvent, nil, nil))
+		//
+		// TODO：kafka 数据写失败 告警
+		//
+
 		return
 	}
 	ctx.JSON(http.StatusOK, newHttpResponse(nil, nil, nil))

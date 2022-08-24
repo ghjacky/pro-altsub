@@ -85,6 +85,9 @@ func generateKafkaReaderDog(topic KfkTopic) {
 		for {
 			if msg, err := _kr.ReadMessage(context.TODO()); err != nil {
 				NewLog("trace", err, fmt.Sprintf("couldn't read message from kafka on topic (%s)", topic.String()), "generateKafkaReaderDog()")
+				// 
+				// TODO：kafka 读数据失败 告警
+				// 
 			} else {
 				_krm[topic].Buffer <- msg.Value
 			}

@@ -19,7 +19,7 @@ type MRuleClause struct {
 	Key      string `json:"key" gorm:"column:col_key;type:varchar(32);not null;comment:规则项比对key"`
 	Operator int    `json:"operator" gorm:"column:col_operator;not null;default:1;comment:规则项比对操作符"`
 	Value    string `json:"value" gorm:"column:col_value;type:varchar(64);not null;comment:规则项比对value"`
-	RuleID   uint   `json:"ruleId" gorm:"column:col_rule_id;not null"`
+	RuleID   uint   `json:"rule_id" gorm:"column:col_rule_id;not null"`
 }
 
 type MRuleClauses struct {

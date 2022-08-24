@@ -10,13 +10,13 @@ import (
 
 type MSchema struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt time.Time      `json:"created_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX        *gorm.DB       `json:"-" gorm:"-"`
 	Data      JSON           `json:"data" gorm:"column:col_data;not null;comment:schema具体内容"`
-	EvField   string         `json:"evField" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
-	EvType    string         `json:"evType" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
-	SourceID  uint           `json:"sourceId" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
+	EvField   string         `json:"ev_field" gorm:"column:col_ev_field;not null;default:.;comment:event数据从哪个字段中获取，默认：'.'（代表上报上来的整个数据即为event数据本身）"`
+	EvType    string         `json:"ev_type" gorm:"column:col_ev_type;not null;default:map;comment:指定获取event数据字段的类型，一般为map或者array"`
+	SourceID  uint           `json:"source_id" gorm:"column:col_source_id;not null;uniqueIndex;comment:schema相关联的 source id"`
 	Source    MSource        `json:"source" gorm:"foreignKey:SourceID;references:ID"`
 }
 
@@ -49,7 +49,7 @@ func (ss *MSchemas) Fetch() error {
 		base.NewLog("error", err, "拉取schema失败", "models:schema.Add()")
 		return err
 	}
-	if err := ss.PQ.Query(ss.TX, &ss.All).Error; err != nil {
+	if err := ss.PQ.Query(ss.TX, &ss.All, &MSchema{}).Error; err != nil {
 		base.NewLog("error", err, "拉取schema", "models:schema.Add()")
 		return err
 	}

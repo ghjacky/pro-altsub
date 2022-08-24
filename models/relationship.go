@@ -8,8 +8,8 @@ import (
 
 type MRelationship struct {
 	ID        uint           `json:"id" gorm:"primarykey"`
-	CreatedAt time.Time      `json:"createdAt"`
-	DeletedAt gorm.DeletedAt `json:"deletedAt" gorm:"index" `
+	CreatedAt time.Time      `json:"created_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index" `
 	TX        *gorm.DB       `json:"-" gorm:"-"`
 	EventId   uint
 }
