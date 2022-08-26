@@ -96,6 +96,7 @@ func generateKafkaReaderDog(topic KfkTopic) {
 }
 
 func WriteToKafka(source string, value []byte) error {
+	_kw.AllowAutoTopicCreation = true
 	return _kw.WriteMessages(context.Background(), kafka.Message{
 		Topic: genKfkTopic(source).String(),
 		Key:   genKfkTopic(source).Bytes(),

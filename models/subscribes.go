@@ -77,3 +77,11 @@ func (ss *MSubscribes) Fetch() error {
 	}
 	return nil
 }
+
+func (s *MSubscribe) DeleteByReceiver(tx *gorm.DB) error {
+	return tx.Where("col_receiver_id = ?", s.ReceiverID).Unscoped().Delete(&MSubscribe{}).Error
+}
+
+func (s *MSubscribe) DeleteByRule(tx *gorm.DB) error {
+	return tx.Where("col_rule_id = ?", s.RuleID).Unscoped().Delete(&MSubscribe{}).Error
+}

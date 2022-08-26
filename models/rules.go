@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	RuleTypeSubscribe         = iota + 1
+	RuleTypeDefault = iota
+	RuleTypeSubscribe
 	RuleTypeEventRelationship // 告警认领（同一类告警）
 	RuleTypeMaintenance
 	RuleTypeSuppression
@@ -22,10 +23,10 @@ type MRule struct {
 	// StartAt     int64          `json:"startAt" gorm:"column:col_start_at;not null;comment:规则生效时间段开始秒级时间戳"`
 	// EndAt       int64          `json:"end_at" gorm:"column:col_end_at;not null;comment:规则生效时间段结束秒级时间戳"`
 	//（belongs_to、has_one关系中，如果新增条目时要使外键为空，则须使用*uint类型，因为*类型零值为nil，而uint零值则为0，如果是0而库认为对应id为0的关联项不存在，数据库会报错）
-	Type         uint             `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制）"`
-	ID           uint             `json:"id" gorm:"primarykey"`
-	CreatedAt    time.Time        `json:"created_at"`
-	DeletedAt    gorm.DeletedAt   `json:"deleted_at" gorm:"index" `
+	Type      uint      `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制）"`
+	ID        uint      `json:"id" gorm:"primarykey"`
+	CreatedAt time.Time `json:"created_at"`
+	// DeletedAt    gorm.DeletedAt   `json:"deleted_at" gorm:"index" `
 	TX           *gorm.DB         `json:"-" gorm:"-"`
 	Name         string           `json:"name" gorm:"column:col_name;type:varchar(64);not null;uniqueIndex:idx_source_rule;comment:规则名称"`
 	Description  string           `json:"description" gorm:"column:col_description;type:text;comment:规则描述信息"`
@@ -194,9 +195,11 @@ func (r *MRule) Delete() error {
 		base.NewLog("error", err, "规则删除失败", "models:rule.Delete()")
 		return err
 	}
-	if err := r.TX.Delete(r).Error; err != nil {
+	var s = &MSubscribe{RuleID: r.ID}
+	if err := r.TX.Unscoped().Delete(r).Error; err != nil {
 		base.NewLog("error", err, "规则删除失败", "models:rule.Delete()")
 		return err
 	}
+	s.DeleteByRule(r.TX)
 	return nil
 }

@@ -21,23 +21,24 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 			buf := base.ReadFromKafka(src)
 			for {
 				rawEv := <-buf
+				base.NewLog("trace", nil, fmt.Sprintf("从kafka读取到数据 rawEv: %s", string(rawEv)), "event:ReadAndParseEventFromBufferForever()")
 				// 根据source名称找对应schema解析事件
 				var schm = models.MSchema{}
 				schm.TX = base.DB()
 				if err := schema.GetBySourceName(&schm, src); err != nil {
-					base.NewLog("error", err, "从buffer读取并解析事件失败", "ReadAndParseEventFromBufferForever()")
+					base.NewLog("error", err, "根据 source name 获取 schema 失败", "ReadAndParseEventFromBufferForever()")
 					continue
 				}
-				// 原始事件入库
 				var ev = models.MEvent{Data: rawEv}
-				if err := StoreRawToDb(&ev); err != nil {
-					base.NewLog("warn", err, "事件入库失败", "ReadAndParseEventFromBufferForever()")
-				}
 				if parsedEvs, err := schema.ParseEvent(&schm, &ev); err != nil {
 					base.NewLog("error", err, "事件解析失败", "ReadAndParseEventFromBufferForever()")
 					continue
 				} else {
-					base.NewLog("trace", nil, fmt.Sprintf("事件解析：%#v", parsedEvs), "ReadAndParseEventFromBufferForever()")
+					// 原始事件入库
+					if err := StoreRawToDb(&ev); err != nil {
+						base.NewLog("warn", err, "事件入库失败", "ReadAndParseEventFromBufferForever()")
+					}
+					base.NewLog("trace", nil, fmt.Sprintf("事件解析成功：%#v", parsedEvs), "ReadAndParseEventFromBufferForever()")
 					for _, parseEv := range parsedEvs {
 						go func(parseEv schema.SchemaedEvent) {
 							// 事件处理-匹配规则
