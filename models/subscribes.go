@@ -34,6 +34,9 @@ type MSubscribes struct {
 }
 
 func (s *MSubscribe) BeforeSave(tx *gorm.DB) error {
+	if tx.Statement.Context.Value("subscribe") == nil {
+		return nil
+	}
 	sub, ok := tx.Statement.Context.Value("subscribe").(MSubscribe)
 	if !ok {
 		err := errors.New("wrong struct value in tx.Context")

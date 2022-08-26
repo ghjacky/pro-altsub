@@ -4,6 +4,7 @@ import (
 	"altsub/base"
 	"altsub/models"
 	"altsub/modules/schema"
+	"context"
 	"encoding/json"
 )
 
@@ -19,7 +20,7 @@ func StoreRawToDb(ev *models.MEvent) error {
 
 // 解析后数据入库
 func StoreParsedEvToDb(parsedEv schema.SchemaedEvent, rs []models.MRule) error {
-	var ev = models.MSchemaedEvent{TX: base.DB().Begin()}
+	var ev = models.MSchemaedEvent{TX: base.DB().Begin().WithContext(context.WithValue(context.Background(), "subscribe", nil))}
 	ev.Data, _ = json.Marshal(parsedEv)
 	ev.Rules = rs
 	if err := ev.Add(); err != nil {

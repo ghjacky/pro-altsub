@@ -31,6 +31,7 @@ func (sv *HttpServer) schemaRoutes() {
 	srg.POST("", handlerv1.AddSchema)
 	srg.GET("", handlerv1.FetchSchemas)
 	srg.GET("/:id", handlerv1.GetSchema)
+	srg.PUT("/:id", handlerv1.UpdateSchema)
 }
 
 func (sv *HttpServer) eventRoutes() {

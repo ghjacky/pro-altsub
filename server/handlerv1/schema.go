@@ -36,11 +36,13 @@ func AddSchema(ctx *gin.Context) {
 
 func UpdateSchema(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
-	var schm = models.MSchema{ID: uint(id), TX: base.DB().Begin()}
-	if err := ctx.BindJSON(&schm.Data);id == 0 || err != nil {
+	var schm = models.MSchema{}
+	if err := ctx.BindJSON(&schm);id == 0 || err != nil {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
 		return
 	}
+	schm.ID = uint(id)
+	schm.TX = base.DB().Begin()
 	if err := schema.Update(&schm); err != nil {
 		schm.TX.Rollback()
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToUpdateSchema, nil, nil))

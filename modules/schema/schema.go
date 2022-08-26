@@ -66,11 +66,13 @@ func Update(schm *models.MSchema) (err error) {
 		base.NewLog("error", err, "更新schema失败", "schema:Update()")
 		return err
 	}
-	if err := schm.Get(); err != nil {
+	oldSchm := models.MSchema{TX: schm.TX, ID: schm.ID, SourceID: schm.SourceID, Source: schm.Source}
+	if err := oldSchm.Get("Source"); err != nil {
 		base.NewLog("error", err, "更新schema失败", "schema:Update()")
 		return err
 	}
-	return schm.Update()
+	oldSchm.Data = schm.Data
+	return oldSchm.Update()
 }
 
 func GetBySourceName(schm *models.MSchema, srcName string) (err error) {

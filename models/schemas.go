@@ -30,11 +30,14 @@ func (*MSchema) TableName() string {
 	return "tb_schemas"
 }
 
-func (s *MSchema) Get() error {
+func (s *MSchema) Get(preloads ...string) error {
 	if s.TX == nil {
 		err := errors.New("nil db object")
 		base.NewLog("error", err, "获取schema失败", "models:schema.Get()")
 		return err
+	}
+	for _, p := range preloads {
+		s.TX = s.TX.Preload(p)
 	}
 	if err := s.TX.First(s).Error; err != nil {
 		base.NewLog("error", err, "获取schema", "models:schema.Get()")
