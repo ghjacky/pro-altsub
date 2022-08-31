@@ -42,8 +42,55 @@ func (m *MMaintenance) Add() error {
 		return err
 	}
 	if err := m.TX.Create(m).Error; err != nil {
-		base.NewLog("error", err, "新增维护项", "models:maintenance.Add()")
+		base.NewLog("error", err, "新增维护项失败", "models:maintenance.Add()")
 		return err
 	}
 	return nil
+}
+
+func (m *MMaintenance) Get(preloads ...string) error {
+	if m.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取维护项失败", "models:maintenance.Get()")
+		return err
+	}
+	if m.ID == 0 {
+		err := errors.New("empty id")
+		base.NewLog("error", err, "获取维护项失败", "models:maintenance.Get()")
+		return err
+	}
+	for _, p := range preloads {
+		m.TX = m.TX.Preload(p)
+	}
+	return m.TX.First(m).Error
+}
+
+func (m *MMaintenance) Delete() error {
+	if m.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "删除维护项失败", "models:maintenance.Delete()")
+		return err
+	}
+	if m.ID == 0 {
+		err := errors.New("empty id")
+		base.NewLog("error", err, "删除维护项失败", "models:maintenance.Delete()")
+		return err
+	}
+	if err := m.TX.Delete(m).Error; err != nil {
+		base.NewLog("error", err, "删除维护项失败", "models:maintenance.Delete()")
+		return err
+	}
+	return nil
+}
+
+func (ms *MMaintenances) Fetch(preloads ...string) error {
+	if ms.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取维护项列表失败", "models:maintenance.Fetch()")
+		return err
+	}
+	for _, p := range preloads {
+		ms.TX = ms.TX.Preload(p)
+	}
+	return ms.PQ.Query(ms.TX, &ms.All, &MMaintenance{}).Error
 }

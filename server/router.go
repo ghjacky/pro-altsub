@@ -64,7 +64,11 @@ func (sv *HttpServer) subscribeRoutes() {
 }
 
 func (sv *HttpServer) maintenanceRoutes() {
-
+	mrg := sv.Engine.Group(generateRoutePath("maintenances"))
+	mrg.GET("", handlerv1.FetchMaintenances)
+	mrg.POST("", handlerv1.AddMaintenance)
+	mrg.DELETE("/:id", handlerv1.RemoveMaintenance)
+	mrg.GET("/:id", handlerv1.GetMaintenance)
 }
 
 func (sv *HttpServer) dutyRoutes() {

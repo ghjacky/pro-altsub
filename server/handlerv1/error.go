@@ -123,6 +123,22 @@ var (
 		code:    7003,
 		message: "获取排班班次列表失败",
 	}
+	ErrorFailedToFetchMaintenances ResponseError = ResponseError{
+		code:    8001,
+		message: "获取维护项列表失败",
+	}
+	ErrorFailedToGetMaintenance ResponseError = ResponseError{
+		code:    8002,
+		message: "获取维护项失败",
+	}
+	ErrorFailedToAddMaintenance ResponseError = ResponseError{
+		code:    8003,
+		message: "新增维护项失败",
+	}
+	ErrorFailedToRemoveMaintenance ResponseError = ResponseError{
+		code:    8004,
+		message: "新增维护项失败",
+	}
 )
 
 func NewErr(code int, message string, e error) *ResponseError {

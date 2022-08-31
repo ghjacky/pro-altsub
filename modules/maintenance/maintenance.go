@@ -3,6 +3,7 @@ package maintenance
 import (
 	"altsub/base"
 	"altsub/models"
+	"errors"
 	"time"
 )
 
@@ -35,4 +36,40 @@ func Check(rs []models.MRule) bool {
 		}
 	}
 	return false
+}
+
+func Fetch(ms *models.MMaintenances) error {
+	if ms.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取维护项列表失败", "maintenance:Fetch()")
+		return err
+	}
+	return ms.Fetch()
+}
+
+func Add(m *models.MMaintenance) error {
+	if m.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "新增维护项失败", "maintenance:Add()")
+		return err
+	}
+	return m.Add()
+}
+
+func Remove(m *models.MMaintenance) error {
+	if m.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "删除维护项失败", "maintenance:Remove()")
+		return err
+	}
+	return m.Delete()
+}
+
+func Get(m *models.MMaintenance) error {
+	if m.TX == nil {
+		err := errors.New("nil db object")
+		base.NewLog("error", err, "获取维护项失败", "maintenance:Get()")
+		return err
+	}
+	return m.Get()
 }
