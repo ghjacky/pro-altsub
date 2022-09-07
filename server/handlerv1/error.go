@@ -139,6 +139,34 @@ var (
 		code:    8004,
 		message: "新增维护项失败",
 	}
+	ErrorFailedToAddIssueHandling ResponseError = ResponseError{
+		code:    9001,
+		message: "新增问题处理项失败",
+	}
+	ErrorFailedToUpdateIssueHandling ResponseError = ResponseError{
+		code:    9002,
+		message: "更新问题处理项失败",
+	}
+	ErrorFailedToGetIssueHandling ResponseError = ResponseError{
+		code:    9003,
+		message: "获取问题处理项失败",
+	}
+	ErrorFailedToFetchIssueHandling ResponseError = ResponseError{
+		code:    9004,
+		message: "获取问题处理项列表失败",
+	}
+	ErrorFailedToCloseIssueHandling ResponseError = ResponseError{
+		code:    9005,
+		message: "关闭问题处理项失败",
+	}
+	ErrorFailedToDeleteIssueHandling ResponseError = ResponseError{
+		code:    9006,
+		message: "删除问题处理项失败",
+	}
+	ErrorFailedToFetchIssueHandlingEvents ResponseError = ResponseError{
+		code:    9007,
+		message: "获取问题处理项关联告警事件列表失败(最近100条，最近一周)",
+	}
 )
 
 func NewErr(code int, message string, e error) *ResponseError {

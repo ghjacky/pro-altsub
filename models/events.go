@@ -44,6 +44,7 @@ type MSchemaedEvent struct {
 	TX        *gorm.DB  `json:"-" gorm:"-"`
 	Data      JSON      `json:"data" gorm:"column:col_data;not null;comment:解析过后的告警事件数据"` // SchemaedEvent
 	Rules     []MRule   `json:"rules" gorm:"many2many:tb_events_rules"`
+	EventId   string    `json:"eventid" gorm:"column:col_eventid;not null;comment:告警id"`
 }
 
 type MSchemaedEvents struct {
