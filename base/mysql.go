@@ -27,7 +27,9 @@ func initMysql() {
 			Config.MysqlConf.Host,
 			Config.MysqlConf.Port,
 			Config.MysqlConf.Database)),
-		&gorm.Config{},
+		&gorm.Config{
+			Logger: gormLog,
+		},
 	)
 	if err != nil {
 		NewLog("fatal", err, "database init failed", "MigrateDB()")
