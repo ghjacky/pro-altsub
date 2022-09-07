@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -72,6 +72,8 @@ func main() {
 	event.ReadAndParseEventFromBufferForever(sources...)
 	watchingSignal()
 	var httpServer = server.NewServer(base.Config.MainConfig.Listen, gin.DebugMode)
+	httpServer.Engine.Use(gin.Recovery())
+	pprof.Register(httpServer.Engine)
 	httpServer.RegisterRoutes()
 	httpServer.RunForever()
 }
