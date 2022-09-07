@@ -14,6 +14,7 @@ const (
 )
 
 type MSubscribe struct {
+	TX          *gorm.DB  `json:"-" gorm:"-"`
 	CreatedAt   time.Time `json:"created_at" form:"-"`
 	Name        string    `json:"name" form:"name" gorm:"column:col_name;comment:订阅或指派名称"`
 	Description string    `json:"description" form:"description" gorm:"column:col_description;type:text;comment:订阅或指派描述"`

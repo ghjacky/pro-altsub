@@ -87,7 +87,7 @@ func (r *MReceiver) Delete() error {
 		base.NewLog("error", err, "删除接收者失败", "models:receiver.Delete()")
 		return err
 	}
-	var s = &MSubscribe{ReceiverID: r.ID}
+	var s = &MSubscribe{ReceiverID: r.ID, TX: r.TX}
 	if err := r.TX.Unscoped().Delete(r).Error; err != nil {
 		base.NewLog("error", err, "删除接收者失败", "models:receiver.Delete()")
 		return err

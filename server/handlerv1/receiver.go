@@ -58,10 +58,12 @@ func DeleteReceiver(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
 		return
 	}
-	var rcv = models.MReceiver{ID: uint(id), TX: base.DB()}
+	var rcv = models.MReceiver{ID: uint(id), TX: base.DB().Begin()}
 	if err := rcv.Delete(); err != nil {
+		rcv.TX.Rollback()
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToDeleteReceiver, nil, nil))
 		return
 	}
+	rcv.TX.Commit()
 	ctx.JSON(http.StatusOK, newHttpResponse(nil, nil, nil))
 }

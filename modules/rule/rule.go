@@ -135,7 +135,7 @@ func Check(srcName string, ev schema.SchemaedEvent) []models.MRule {
 	src.TX = base.DB()
 	src.Name = srcName
 	if err := src.GetByName(); err != nil {
-		base.NewLog("error", err, "检测事件相关维护项失败", "event:CheckMaintenance()")
+		base.NewLog("error", err, "获取事件规则失败", "event:Check()")
 		return nil
 	}
 	rs.PQ = models.PageQuery{
@@ -145,7 +145,7 @@ func Check(srcName string, ev schema.SchemaedEvent) []models.MRule {
 	}
 	rs.TX = src.TX
 	if err := rs.Fetch("Receivers", "Clauses"); err != nil {
-		base.NewLog("error", err, "检测事件相关维护项失败", "event:CheckMaintenance()")
+		base.NewLog("error", err, "获取事件规则失败", "event:Check()")
 		return nil
 	} else {
 		var all = []models.MRule{}
