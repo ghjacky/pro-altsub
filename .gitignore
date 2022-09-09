@@ -6,5 +6,6 @@ altsub
 vendor
 scripts/bin
 doc
-configs
+configs/**
+!configs/sample.toml
 logs

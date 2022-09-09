@@ -1,0 +1,28 @@
+[main]
+listen = ":38081"
+log = "./logs/altsub.log"
+level = "trace"
+domain = "https://xxxxx.com"
+easy = "https://xxxxx.com"
+log_rotate_mega_bytes = 50
+log_retain_days = 10
+
+[mysql]
+host = "127.0.0.1"
+port = 3306
+database = "altsub"
+user = "root"
+password = ""
+
+[kafka]
+brokers = ["127.0.0.1:9092"]
+
+[notification]
+alert_ensure_page = "/static/alert_ensure.html"
+alert_ensure_api = "/api/events/ensure"
+
+## 北京快松果科技有限公司
+default_dingtalk_appkey = "xxxx"
+default_dingtalk_appsecret = "xxxxxx"
+default_dingtalk_chatid = "xxx"                                # (群名称：钉钉消息测试（easy报警订阅）)
+# default_dingtalk_chatid = "xxxx" (群名称：松果域名告警)
