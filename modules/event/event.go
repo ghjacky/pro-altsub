@@ -50,6 +50,23 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 									return
 								}
 							}(parseEv, rs)
+							// 事件处理-发版检测
+							var bigtype = ""
+							var instance = ""
+							var service = ""
+							for _, item := range parseEv {
+								if item.Key == "bigtype" {
+									bigtype, _ = item.Value.(string)
+								} else if item.Key == "instance" {
+									instance, _ = item.Value.(string)
+								} else if item.Key == "service" {
+									service, _ = item.Value.(string)
+								}
+							}
+							if checkPublish(bigtype, service, instance) {
+								base.NewLog("info", nil, "事件检测 - 检测到服务发版", "ReadAndParseEventFromBufferForever()")
+								return
+							}
 							// 事件处理-维护检测
 							if checkMaintenance(rs) {
 								base.NewLog("info", nil, "事件检测 - 检测到相关维护项", "ReadAndParseEventFromBufferForever()")
@@ -59,19 +76,35 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 								return
 							}
 							// 事件处理-抑制检测
+
 							// 事件处理-认领检测
+
 							// 事件处理-指派(订阅)检测
-							if rcvs := checkSubscribe(rs); len(rcvs) > 0 {
-								// 事件处理-告警发送
-								Notice(parseEv, rcvs)
-							}
+							var rcvs []models.MReceiver
+							rcvs = append(rcvs, checkSubscribe(rs)...)
 
 							base.NewLog("debug", nil, "发送至全局接收者", "ReadAndParseEventFromBufferForever()")
 							// send to global group
 
-							base.NewLog("debug", nil, "发送至默认接收者", "ReadAndParseEventFromBufferForever()")
+							base.NewLog("debug", nil, "获取服务默认接收群组", "ReadAndParseEventFromBufferForever()")
 							// send to default group
+							rcvs = append(rcvs, getDefaultServiceGroup(bigtype, service)...)
 
+							if len(rcvs) > 0 {
+								//接收者去重处理
+								var rcvm = map[string]models.MReceiver{}
+								for _, v := range rcvs {
+									if _, ok := rcvm[v.AuthHash]; !ok {
+										rcvm[v.AuthHash] = v
+									}
+								}
+								rcvs = rcvs[:0]
+								for _, rcv := range rcvm {
+									rcvs = append(rcvs, rcv)
+								}
+								// 事件处理-告警发送
+								Notice(parseEv, rcvs)
+							}
 							// 事件发送记录（事件未发送（维护、抑制）、事件已发送但失败、事件已发送且成功）
 						}(parseEv)
 					}

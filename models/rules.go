@@ -23,7 +23,7 @@ type MRule struct {
 	// StartAt     int64          `json:"startAt" gorm:"column:col_start_at;not null;comment:规则生效时间段开始秒级时间戳"`
 	// EndAt       int64          `json:"end_at" gorm:"column:col_end_at;not null;comment:规则生效时间段结束秒级时间戳"`
 	//（belongs_to、has_one关系中，如果新增条目时要使外键为空，则须使用*uint类型，因为*类型零值为nil，而uint零值则为0，如果是0而库认为对应id为0的关联项不存在，数据库会报错）
-	Type      uint      `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制）"`
+	Type      uint      `json:"type" gorm:"column:col_type;not null;comment:规则类型（订阅、维护、抑制、全局-非source相关）"`
 	ID        uint      `json:"id" gorm:"primarykey"`
 	CreatedAt time.Time `json:"created_at"`
 	// DeletedAt    gorm.DeletedAt   `json:"deleted_at" gorm:"index" `
