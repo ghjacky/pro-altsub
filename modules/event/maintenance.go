@@ -23,6 +23,7 @@ func checkPublish(bigtype, service, instance string) bool {
 			},
 		},
 	}
+	base.NewLog("debug", nil, fmt.Sprintf("请求easy接口检测服务发版状态信息（%s/api_deploy_check?big_type=%s&env=%s&service=%s&instance=%s)", base.Config.MainConfig.Easy, bigtype, "online", service, instance), "checkPublish()")
 	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s/api_deploy_check?big_type=%s&env=%s&service=%s&instance=%s", base.Config.MainConfig.Easy, bigtype, "online", service, instance), nil)
 	res, err := hc.Do(hq)
 	if err != nil {
@@ -41,6 +42,7 @@ func checkPublish(bigtype, service, instance string) bool {
 		base.NewLog("error", err, "easy接口响应体解析失败", "checkMaintenance()")
 		return false
 	}
+	base.NewLog("debug", nil, fmt.Sprintf("从easy检测服务发版状态返回结果：%v", _res), "checkPublish()")
 	v, ok := _res["data"].(bool)
 	if !v || !ok {
 		return false

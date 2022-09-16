@@ -4,6 +4,7 @@ import (
 	"altsub/base"
 	"altsub/models"
 	"altsub/modules/event"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,8 +12,13 @@ import (
 )
 
 func ReceiveRawEvent(ctx *gin.Context) {
-	var  srcName = ctx.Query("source")
-	if len( srcName) <= 0 {
+	srcName, exist := ctx.GetQuery("source")
+	if exist && len(srcName) <= 0 {
+		base.NewLog("error", errors.New("empty source name"), "source名称为空", "ReceiveRawEvent()")
+		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptySource, nil, nil))
+		return
+	} else if !exist && len(srcName) <= 0 {
+		base.NewLog("error", errors.New("no source"), "缺少source参数", "ReceiveRawEvent()")
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorEmptySource, nil, nil))
 		return
 	}
@@ -22,7 +28,7 @@ func ReceiveRawEvent(ctx *gin.Context) {
 		return
 	}
 	base.NewLog("trace", nil, fmt.Sprintf("接收到原始告警消息: %s", string(ev.Data)), "handlerv1:ReceiveRawEvent()")
-	if err := event.Receive( srcName, ev); err != nil {
+	if err := event.Receive(srcName, ev); err != nil {
 		base.NewLog("error", err, "事件写入失败", "handlerv1:ReceiveRawEvent()")
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorFailedToWriteEvent, nil, nil))
 		//

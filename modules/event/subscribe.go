@@ -28,6 +28,7 @@ func getDefaultServiceGroup(bigtype, service string) []models.MReceiver {
 			},
 		},
 	}
+	base.NewLog("debug", nil, fmt.Sprintf("请求easy接口获取默认分组信息（%s/api_dd_msg_token?big_type=%s&env=%s&service=%s)", base.Config.MainConfig.Easy, bigtype, "online", service), "getDefaultServiceGroup()")
 	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s/api_dd_msg_token?big_type=%s&env=%s&service=%s", base.Config.MainConfig.Easy, bigtype, "online", service), nil)
 	res, err := hc.Do(hq)
 	if err != nil {
@@ -46,6 +47,7 @@ func getDefaultServiceGroup(bigtype, service string) []models.MReceiver {
 		base.NewLog("error", err, "easy接口响应体解析失败", "getDefaultServiceGroup()")
 		return rcvs
 	}
+	base.NewLog("debug", nil, fmt.Sprintf("从easy获取到默认分组信息：%v", _res), "getDefaultServiceGroup()")
 	data, _ := _res["data"].(map[string]interface{})
 	if data == nil {
 		base.NewLog("error", err, "easy接口响应体字段缺失", "getDefaultServiceGroup()")
