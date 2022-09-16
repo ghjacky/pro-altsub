@@ -178,10 +178,10 @@ func (dt *DingTalk) makeActionCardMsgContent(msg string) map[string]interface{} 
 					"markdown":        msg,
 					"btn_orientation": 1, // 1: 按钮横向排列； 0: 竖向排列
 					"btn_json_list": []map[string]string{
-						{
-							"title":      "告警确认",
-							"action_url": "ensureUrl",
-						},
+						// {
+						// 	"title":      "告警确认",
+						// 	"action_url": "ensureUrl",
+						// },
 						// {
 						// 	"title":      "无效告警",
 						// 	"action_url": dissUrl,

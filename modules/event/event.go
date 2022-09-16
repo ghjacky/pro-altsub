@@ -64,19 +64,24 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 								} else if item.Key == "service" {
 									service, _ = item.Value.(string)
 								}
-							}
+							}				
+							// 事件处理-发版检测				
+							base.NewLog("info", nil, fmt.Sprintf("事件检测 - 开始检测是否为服务发版（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 							if checkPublish(bigtype, service, instance) {
-								base.NewLog("info", nil, "事件检测 - 检测到服务发版", "ReadAndParseEventFromBufferForever()")
+								base.NewLog("info", nil, fmt.Sprintf("事件检测 - 检测到服务发版（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 								return
 							}
+							base.NewLog("info", nil, fmt.Sprintf("事件检测 - 没有检测到服务发版（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 							// 事件处理-维护检测
+							base.NewLog("info", nil, fmt.Sprintf("事件检测 - 开始检测相关维护项（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 							if checkMaintenance(rs) {
-								base.NewLog("info", nil, "事件检测 - 检测到相关维护项", "ReadAndParseEventFromBufferForever()")
+								base.NewLog("info", nil, fmt.Sprintf("事件检测 - 检测到相关维护项（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 								//
 								// TODO：检测到维护事项，是否需要记录入库？
 								//
 								return
 							}
+							base.NewLog("info", nil, fmt.Sprintf("事件检测 - 没有检测到相关维护项（%s:%s:%s）", bigtype, service, instance), "ReadAndParseEventFromBufferForever()")
 							// 事件处理-抑制检测
 
 							// 事件处理-认领检测
