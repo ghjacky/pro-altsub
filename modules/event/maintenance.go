@@ -23,7 +23,7 @@ func checkPublish(bigtype, service, instance string) bool {
 			},
 		},
 	}
-	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s?big_type=%s&env=%s&service=%s&instance=%s", base.Config.MainConfig.Easy, bigtype, "online", service, instance), nil)
+	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s/api_deploy_check?big_type=%s&env=%s&service=%s&instance=%s", base.Config.MainConfig.Easy, bigtype, "online", service, instance), nil)
 	res, err := hc.Do(hq)
 	if err != nil {
 		base.NewLog("error", err, "easy接口请求失败", "checkMaintenance()")

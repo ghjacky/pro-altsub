@@ -28,7 +28,7 @@ func getDefaultServiceGroup(bigtype, service string) []models.MReceiver {
 			},
 		},
 	}
-	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s?big_type=%s&env=%s&service=%s", base.Config.MainConfig.Easy, bigtype, "online", service), nil)
+	hq, _ := http.NewRequest("GET", fmt.Sprintf("%s/api_dd_msg_token?big_type=%s&env=%s&service=%s", base.Config.MainConfig.Easy, bigtype, "online", service), nil)
 	res, err := hc.Do(hq)
 	if err != nil {
 		base.NewLog("error", err, "easy接口请求失败", "getDefaultServiceGroup()")

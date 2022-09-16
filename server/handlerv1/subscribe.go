@@ -18,7 +18,10 @@ func Subscribe(ctx *gin.Context) {
 		return
 	}
 	var sub = models.MSubscribe{}
-	if err := ctx.BindQuery(&sub); err != nil {
+	sub.StartAt, _ = strconv.ParseInt(ctx.Query("start_at"), 10, 64)
+	sub.EndAt, _ = strconv.ParseInt(ctx.Query("end_at"), 10, 64)
+	sub.Name = ctx.Query("name")
+	if sub.StartAt == 0 || sub.EndAt == 0 || len(sub.Name) == 0 {
 		ctx.JSON(http.StatusOK, newHttpResponse(&ErrorBadRequest, nil, nil))
 		return
 	}

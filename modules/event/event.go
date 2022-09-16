@@ -4,6 +4,8 @@ import (
 	"altsub/base"
 	"altsub/models"
 	"altsub/modules/schema"
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
 )
 
@@ -85,6 +87,19 @@ func ReadAndParseEventFromBufferForever(srcs ...string) {
 
 							base.NewLog("debug", nil, "发送至全局接收者", "ReadAndParseEventFromBufferForever()")
 							// send to global group
+							auth := map[string]interface{}{
+								"app_key":    base.Config.NotificationConf.DefaultDingTalkAppKey,
+								"app_secret": base.Config.NotificationConf.DefaultDingTalkAppSecret,
+								"chat_id":    base.Config.NotificationConf.DefaultDingtalkChatID,
+							}
+							ab, _ := json.Marshal(auth)
+							hs := md5.New()
+							hs.Write(ab)
+							rcvs = append(rcvs, models.MReceiver{
+								Type:     models.ReceiverTypeDingtalkApp,
+								Auth:     ab,
+								AuthHash: fmt.Sprintf("%x", hs.Sum(nil)),
+							})
 
 							base.NewLog("debug", nil, "获取服务默认接收群组", "ReadAndParseEventFromBufferForever()")
 							// send to default group
